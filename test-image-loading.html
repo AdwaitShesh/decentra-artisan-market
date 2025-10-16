@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Image Loading</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .test-image { width: 200px; height: 200px; object-fit: cover; margin: 10px; border: 2px solid #333; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>NFT Image Loading Test</h1>
+    
+    <h2>Test Image from Unsplash (should work):</h2>
+    <img src="https://images.unsplash.com/photo-1614812513172-567d2fe96a75?q=80&w=1470&auto=format&fit=crop" 
+         class="test-image" 
+         onload="console.log('✅ Unsplash image loaded successfully')"
+         onerror="console.log('❌ Unsplash image failed to load')">
+    
+    <h2>Test IPFS Metadata (local gateway):</h2>
+    <div id="metadata-test"></div>
+    
+    <script>
+        // Test fetching metadata from local IPFS
+        fetch('http://127.0.0.1:8081/ipfs/Qmaq6ypCWna8UcX53dQ54YnzKCsJzQMMKLpfjTrDu1xG77')
+            .then(response => response.json())
+            .then(metadata => {
+                console.log('✅ Metadata loaded:', metadata);
+                document.getElementById('metadata-test').innerHTML = `
+                    <p class="success">✅ Metadata loaded successfully</p>
+                    <p><strong>Name:</strong> ${metadata.name}</p>
+                    <p><strong>Image URL:</strong> ${metadata.image}</p>
+                    <img src="${metadata.image}" class="test-image" 
+                         onload="console.log('✅ Metadata image loaded successfully')"
+                         onerror="console.log('❌ Metadata image failed to load')">
+                `;
+            })
+            .catch(error => {
+                console.error('❌ Failed to load metadata:', error);
+                document.getElementById('metadata-test').innerHTML = `
+                    <p class="error">❌ Failed to load metadata: ${error.message}</p>
+                `;
+            });
+    </script>
+</body>
+</html>

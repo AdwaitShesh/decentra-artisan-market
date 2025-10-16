@@ -1,0 +1,24 @@
+{
+  "name": "Decentra Artisan NFT #1",
+  "description": "A unique digital artwork from the Decentra Artisan Market collection",
+  "image": "ipfs://YOUR_IMAGE_CID_HERE",
+  "external_url": "https://example.com/nft/1",
+  "attributes": [
+    {
+      "trait_type": "Artist",
+      "value": "Bharat Artist"
+    },
+    {
+      "trait_type": "Medium",
+      "value": "Digital Painting"
+    },
+    {
+      "trait_type": "Style",
+      "value": "Abstract"
+    },
+    {
+      "trait_type": "Colors",
+      "value": "Vibrant"
+    }
+  ]
+} 

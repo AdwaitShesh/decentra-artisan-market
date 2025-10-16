@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BharatNFT - Artist-Centric NFT Marketplace</title>
+    <meta name="description" content="A decentralized, artist-centric NFT marketplace that empowers creators, artists, and small businesses" />
+    <meta name="author" content="Lovable" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" />
+
+    <meta property="og:title" content="bharat-artisan-market" />
+    <meta property="og:description" content="Lovable Generated Project" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@lovable_dev" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/smoothscroll-polyfill@0.4.4/dist/smoothscroll.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+      /* Improved scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: rgba(15, 15, 15, 0.2);
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: rgba(125, 125, 125, 0.5);
+        border-radius: 10px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(125, 125, 125, 0.8);
+      }
+      
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .hide-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+      
+      /* Cursor effects */
+      .cursor-dot {
+        width: 5px;
+        height: 5px;
+        background-color: white;
+        border-radius: 50%;
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+      
+      .cursor-outline {
+        width: 30px;
+        height: 30px;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        position: fixed;
+        pointer-events: none;
+        z-index: 9998;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+      
+      /* Background gradient animation */
+      @keyframes gradientAnimation {
+        0% { background-position: 0% 50% }
+        50% { background-position: 100% 50% }
+        100% { background-position: 0% 50% }
+      }
+      
+      .animated-gradient {
+        background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca);
+        background-size: 400% 400%;
+        animation: gradientAnimation 15s ease infinite;
+      }
+      
+      /* Page transitions */
+      .page-transition-enter {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      
+      .page-transition-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 500ms, transform 500ms;
+      }
+      
+      .page-transition-exit {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      .page-transition-exit-active {
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 500ms, transform 500ms;
+      }
+      
+      /* Floating animation */
+      @keyframes floating {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      
+      .floating {
+        animation: floating 3s ease-in-out infinite;
+      }
+      
+      .floating-delay-1 {
+        animation-delay: 0.5s;
+      }
+      
+      .floating-delay-2 {
+        animation-delay: 1s;
+      }
+    </style>
+
+    <!-- Dark mode script to prevent flash -->
+    <script>
+      // Check for saved theme preference or use the system preference
+      const getThemePreference = () => {
+        // next-themes stores theme in localStorage under the 'theme' key
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) return storedTheme;
+
+        // Check for system dark mode preference
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          // Store the preference for future use
+          localStorage.setItem('theme', 'dark');
+          return 'dark';
+        } else {
+          localStorage.setItem('theme', 'light');
+          return 'light';
+        }
+      };
+
+      // Apply the theme class immediately on page load
+      const theme = getThemePreference();
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+  </head>
+
+  <body class="font-['Inter'] bg-background text-foreground overflow-x-hidden">
+    <div id="root"></div>
+    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Custom cursor elements -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+    
+    <!-- Custom cursor script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        
+        // Show cursors when mouse moves
+        window.addEventListener('mousemove', (e) => {
+          cursorDot.style.opacity = '1';
+          cursorOutline.style.opacity = '1';
+          
+          // Position cursors
+          cursorDot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+          
+          // Add lag to the outline for a nice effect
+          setTimeout(() => {
+            cursorOutline.style.transform = `translate(${e.clientX - 15}px, ${e.clientY - 15}px)`;
+          }, 50);
+        });
+        
+        // Hide cursors when mouse leaves the window
+        window.addEventListener('mouseout', () => {
+          cursorDot.style.opacity = '0';
+          cursorOutline.style.opacity = '0';
+        });
+        
+        // Scale effect on clickable elements
+        document.querySelectorAll('a, button, [role="button"], input, select, textarea').forEach(item => {
+          item.addEventListener('mouseover', () => {
+            cursorOutline.style.transform = `translate(${event.clientX - 15}px, ${event.clientY - 15}px) scale(1.5)`;
+            cursorOutline.style.border = '2px solid rgba(139, 92, 246, 0.8)';
+            cursorOutline.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
+          });
+          
+          item.addEventListener('mouseout', () => {
+            cursorOutline.style.transform = `translate(${event.clientX - 15}px, ${event.clientY - 15}px) scale(1)`;
+            cursorOutline.style.border = '2px solid rgba(255, 255, 255, 0.5)';
+            cursorOutline.style.backgroundColor = 'transparent';
+          });
+        });
+        
+        // Initialize smooth scrolling polyfill
+        if (typeof smoothscroll !== 'undefined') {
+          smoothscroll.polyfill();
+        }
+        
+        // Page load animation with Anime.js
+        if (window.anime) {
+          window.anime({
+            targets: '.animate-fade-in',
+            opacity: [0, 1],
+            translateY: [20, 0],
+            easing: 'easeOutQuad',
+            duration: 800,
+            delay: anime.stagger(100)
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
