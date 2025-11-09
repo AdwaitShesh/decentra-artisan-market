@@ -16,6 +16,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { pinByCID, toGatewayUrl, ipfsHealthCheck, uploadFileToIPFS } from '@/lib/ipfs';
 import { Link } from 'react-router-dom';
 import { NetworkStatus } from '@/components/NetworkStatus';
+import { RPCErrorBanner } from '@/components/RPCErrorBanner';
 
 // NFT Categories
 const NFT_CATEGORIES = [
@@ -125,6 +126,7 @@ export function NFTMintForm() {
   };
   
   const { 
+    contract,
     mintNFT, 
     isLoading, 
     error, 
@@ -187,7 +189,7 @@ export function NFTMintForm() {
   const [royaltyPercentage, setRoyaltyPercentage] = useState<number>(2.5);
   const [mintStatus, setMintStatus] = useState<{ type: 'success' | 'error' | 'info' | null; message: string }>({ type: null, message: '' });
   const [isMinting, setIsMinting] = useState<boolean>(false);
-  
+
   // Create a state object that will track all category-specific checklist items
   const [categoryChecklistStatus, setCategoryChecklistStatus] = useState<Record<string, boolean>>({
     // Art
@@ -239,6 +241,16 @@ export function NFTMintForm() {
   // Success popup state
   const [showSuccessPopup, setShowSuccessPopup] = useState<boolean>(false);
   const [mintedNFTData, setMintedNFTData] = useState<any>(null);
+
+  const simulateUpload = () => {
+    if (manualCID) {
+      setTokenURI(`ipfs://${manualCID}`);
+      toast({
+        title: 'CID Set Manually',
+        description: `Using provided CID: ${manualCID}`,
+      });
+    }
+  };
 
   // Get current category-specific checklist items
   const getCurrentCategoryChecklist = () => {
@@ -454,6 +466,33 @@ export function NFTMintForm() {
   const handleMint = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check if contract is initialized
+    if (isLoading) {
+      setMintStatus({ 
+        type: 'error', 
+        message: 'Contract is still initializing. Please wait a moment and try again.' 
+      });
+      toast({
+        title: "Contract Not Ready",
+        description: "Please wait for the contract to finish initializing.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!contract) {
+      setMintStatus({ 
+        type: 'error', 
+        message: 'Contract failed to initialize. Please check your wallet connection and network settings.' 
+      });
+      toast({
+        title: "Contract Not Available",
+        description: error || "Please check your wallet connection and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Check if all checklist requirements are met
     if (!allRequirementsMet) {
       setMintStatus({ 
@@ -664,6 +703,14 @@ export function NFTMintForm() {
     }
   };
 
+  // Track contract initialization completion
+  useEffect(() => {
+    // Contract is ready when it's not loading and either we have a contract or there's an error
+    if (!isLoading) {
+      console.log('Contract initialization complete:', { hasContract: !!contract, hasError: !!error });
+    }
+  }, [isLoading, contract, error]);
+
   // Do not early-return here; keep hooks order stable every render
 
   // If there's an error, we still want to show the form and the recovery banner
@@ -680,46 +727,34 @@ export function NFTMintForm() {
           <span className="ml-2 text-sm">Loading contract...</span>
         </div>
       )}
-      {showBreakerBanner && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertTitle>MetaMask Circuit Breaker Detected</AlertTitle>
-          <AlertDescription>
-            Execution was prevented on this network. To fix: remove the local network in MetaMask (Settings → Networks), then click "Re-add & Switch" below.
-          </AlertDescription>
-          <div className="mt-3 flex gap-2">
-            <Button
-              variant="default"
-              onClick={async () => {
-                try {
-                  // Clear the flag so banner hides on success
-                  localStorage.removeItem('lastMetaMaskCircuitBreaker');
-                  setShowBreakerBanner(false);
-                  await switchToNetwork?.(blockchain);
-                  toast({ title: 'Network Re-added', description: `Switched to ${blockchain}` });
-                } catch (e: any) {
-                  setShowBreakerBanner(true);
-                  toast({ title: 'Re-add failed', description: e?.message || 'Unknown error', variant: 'destructive' });
-                }
-              }}
-            >
-              Re-add & Switch
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                try { localStorage.removeItem('lastMetaMaskCircuitBreaker'); } catch {}
-                setShowBreakerBanner(false);
-              }}
-            >
-              Dismiss
-            </Button>
-          </div>
-        </Alert>
-      )}
-      {error && !isBreakerError && (
+      
+      {/* Use the new RPCErrorBanner component for RPC/circuit breaker errors */}
+      <RPCErrorBanner 
+        error={error || (mintStatus.type === 'error' ? mintStatus.message : undefined)}
+        onDismiss={() => {
+          try { localStorage.removeItem('lastMetaMaskCircuitBreaker'); } catch {}
+          setShowBreakerBanner(false);
+          setMintStatus({ type: null, message: '' });
+        }}
+        onRetry={() => window.location.reload()}
+      />
+      
+      {/* Fallback for non-RPC errors */}
+      {error && !isBreakerError && !/RPC endpoint|circuit breaker|too many errors|-32002|-32603/i.test(error) && (
         <Alert variant="destructive" className="mb-4">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>
+            {error}
+            <div className="mt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+              >
+                Retry Connection
+              </Button>
+            </div>
+          </AlertDescription>
         </Alert>
       )}
       <Card className="w-full">
@@ -749,7 +784,7 @@ export function NFTMintForm() {
         </div>
         
         <CardContent>
-          {/* Pre-minting Checklist */}
+          <fieldset disabled={isLoading || isNetworkSwitching}>
           <div className="mb-6 p-4 border border-dashed rounded-lg">
             <h3 className="text-lg font-medium mb-4">Pre-minting Checklist</h3>
             <div className="grid gap-2">
@@ -1367,6 +1402,28 @@ export function NFTMintForm() {
           
           {step === 'mint' && (
             <form className="space-y-6">
+              {/* Contract Initialization Alert */}
+              {isLoading && (
+                <Alert>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <AlertTitle>Initializing Contract</AlertTitle>
+                  <AlertDescription>
+                    Please wait while we connect to the blockchain and initialize the smart contract. This may take a few moments.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {/* Contract Ready Alert */}
+              {!isLoading && contract && (
+                <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertTitle className="text-green-800 dark:text-green-200">Contract Ready</AlertTitle>
+                  <AlertDescription className="text-green-700 dark:text-green-300">
+                    Smart contract is initialized and ready to mint your NFT.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               {/* Network Status Component */}
               <NetworkStatus 
                 selectedBlockchain={blockchain}
@@ -1482,6 +1539,7 @@ export function NFTMintForm() {
               <AlertDescription>{mintStatus.message}</AlertDescription>
             </Alert>
           )}
+          </fieldset>
         </CardContent>
         
         <CardFooter className="flex justify-between">
@@ -1500,6 +1558,7 @@ export function NFTMintForm() {
               type="button" 
               className="ml-auto" 
               onClick={goToPreview}
+              disabled={isLoading}
             >
               Continue to Preview
             </Button>
@@ -1508,8 +1567,9 @@ export function NFTMintForm() {
           {step === 'preview' && (
             <Button 
               type="button" 
-              className={step === 'details' ? "w-full" : ""}
+              className="ml-auto"
               onClick={goToMint}
+              disabled={isLoading}
             >
               Continue to Mint
             </Button>
@@ -1518,11 +1578,16 @@ export function NFTMintForm() {
           {step === 'mint' && (
             <Button 
               type="button" 
-              className={step === 'details' ? "w-full" : ""}
-              disabled={isMinting || !account || !tokenURI || !allRequirementsMet}
+              className="ml-auto"
+              disabled={isLoading || isMinting || !account || !tokenURI || !allRequirementsMet}
               onClick={handleMint}
             >
-              {isMinting ? (
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Initializing Contract...
+                </>
+              ) : isMinting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Minting...

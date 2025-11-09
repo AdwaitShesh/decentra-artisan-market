@@ -13,7 +13,11 @@
     "contracts:start": "cd contracts && ./scripts/start-networks.sh",
     "contracts:stop": "cd contracts && ./scripts/stop-networks.sh",
     "contracts:deploy": "cd contracts && node scripts/deploy-all.js && cd .. && node update-env-from-deploy.cjs",
-    "dev:full": "npm run contracts:ensure && npm run dev"
+    "dev:full": "npm run contracts:ensure && npm run dev",
+    "reset-metamask": "node scripts/reset-metamask-networks.js",
+    "check-nodes": "./scripts/check-nodes.sh",
+    "fix-rpc": "npm run check-nodes && npm run reset-metamask",
+    "diagnose": "node scripts/diagnose-contract.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

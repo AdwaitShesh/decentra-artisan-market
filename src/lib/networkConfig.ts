@@ -4,6 +4,7 @@ export interface NetworkConfig {
   name: string;
   symbol: string;
   rpcUrl: string;
+  fallbackRpcUrls?: string[]; // Fallback RPC endpoints
   blockExplorer?: string;
   contractAddress: string;
   gasMultiplier: number; // Simulate different gas costs
@@ -20,6 +21,7 @@ export const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
     name: 'Ethereum (Local)',
     symbol: 'ETH',
     rpcUrl: 'http://127.0.0.1:8545',
+    fallbackRpcUrls: ['http://localhost:8545', 'http://0.0.0.0:8545'],
     contractAddress: (import.meta as any).env?.VITE_ETHEREUM_CONTRACT_ADDRESS || (import.meta as any).env?.VITE_NFT_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3',
     gasMultiplier: 3.0,
     color: 'bg-blue-500'
@@ -29,6 +31,7 @@ export const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
     name: 'Polygon (Local)',
     symbol: 'MATIC',
     rpcUrl: 'http://127.0.0.1:8546', // Different port
+    fallbackRpcUrls: ['http://localhost:8546', 'http://0.0.0.0:8546'],
     contractAddress: (import.meta as any).env?.VITE_POLYGON_CONTRACT_ADDRESS || (import.meta as any).env?.VITE_NFT_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3',
     gasMultiplier: 0.1,
     color: 'bg-purple-500'
@@ -58,6 +61,7 @@ export const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
     name: 'Base (Local)',
     symbol: 'ETH',
     rpcUrl: 'http://127.0.0.1:8547', // Different port
+    fallbackRpcUrls: ['http://localhost:8547', 'http://0.0.0.0:8547'],
     contractAddress: (import.meta as any).env?.VITE_BASE_CONTRACT_ADDRESS || (import.meta as any).env?.VITE_NFT_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3',
     gasMultiplier: 0.2,
     color: 'bg-blue-600'

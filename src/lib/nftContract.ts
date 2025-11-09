@@ -1,17 +1,61 @@
   // Helpers to map MetaMask circuit-breaker errors to a stable, actionable message
-  const isCircuitBreakerError = (err: any): boolean => {
-    const code = typeof err?.code === 'number' ? err.code : undefined;
-    const msg = (err?.message || '').toString();
-    return code === -32603 || /circuit\s*breaker|BrokenCircuitError/i.test(msg);
-  };
+const isCircuitBreakerError = (err: any): boolean => {
+  const code = typeof err?.code === 'number' ? err.code : undefined;
+  const msg = (err?.message || '').toString();
+  // Check for circuit breaker, rate limit, and "too many errors" messages
+  return code === -32603 || 
+         code === -32002 || 
+         /circuit\s*breaker|BrokenCircuitError/i.test(msg) ||
+         /too many errors/i.test(msg) ||
+         /retrying in.*minutes/i.test(msg);
+};
 
-  const mapCircuitBreaker = (original: any): Error => {
-    // Persist a hint so the UI can surface guidance if needed
-    try { localStorage.setItem('lastMetaMaskCircuitBreaker', new Date().toISOString()); } catch {}
-    return new Error(
-      'MetaMask circuit breaker is preventing requests on this network. Fix: In MetaMask, remove the local network (Settings → Networks), then re-add it from this app (Network selector) or manually. Ensure your local nodes are running (ports 8545/8546/8547).'
-    );
-  };
+const mapCircuitBreaker = (original: any): Error => {
+  // Persist a hint so the UI can surface guidance if needed
+  try { localStorage.setItem('lastMetaMaskCircuitBreaker', new Date().toISOString()); } catch {}
+  return new Error(
+    'MetaMask RPC endpoint has hit rate limits or circuit breaker. Fix: Run "npm run reset-metamask" in terminal, then follow the instructions to reset MetaMask networks. Ensure your local nodes are running (ports 8545/8546/8547).'
+  );
+};
+
+// Retry helper for RPC calls with exponential backoff
+async function retryRPCCall<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: any;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Don't retry circuit breaker errors - they need manual intervention
+      if (isCircuitBreakerError(error)) {
+        throw mapCircuitBreaker(error);
+      }
+      
+      // Don't retry user rejection
+      if (error.code === 4001 || /user rejected/i.test(error.message)) {
+        throw error;
+      }
+      
+      // If this is the last attempt, throw the error
+      if (attempt === maxRetries - 1) {
+        throw error;
+      }
+      
+      // Wait before retrying with exponential backoff
+      const waitTime = delayMs * Math.pow(2, attempt);
+      console.log(`RPC call failed (attempt ${attempt + 1}/${maxRetries}), retrying in ${waitTime}ms...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+  
+  throw lastError;
+}
 
 import { ethers } from 'ethers';
 import { useState, useEffect } from 'react';
@@ -70,53 +114,175 @@ export function useNFTContract(selectedBlockchain: string = 'ethereum') {
 
   // Initialize contract and connect wallet
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+    
     const initContract = async () => {
       try {
+        if (!isMounted) return;
+        
         setIsLoading(true);
         setError(null);
         
+        // Set timeout to prevent infinite loading
+        timeoutId = setTimeout(() => {
+          if (isMounted && isLoading) {
+            setError('Contract initialization timed out. Please check: 1) MetaMask is unlocked, 2) Nodes are running (npm run check-nodes), 3) Network is correct.');
+            setIsLoading(false);
+          }
+        }, 30000); // 30 second timeout
+        
+        console.log('🔄 Initializing contract for blockchain:', selectedBlockchain);
+        
         // Get network configuration for selected blockchain
         const networkConfig = getNetworkConfig(selectedBlockchain);
+        if (!isMounted) return;
         setCurrentNetwork(networkConfig);
+        
+        console.log('📡 Network config:', {
+          name: networkConfig.name,
+          chainId: networkConfig.chainId,
+          rpcUrl: networkConfig.rpcUrl,
+          contractAddress: networkConfig.contractAddress
+        });
 
         // Check if MetaMask is installed
         if (!window.ethereum) {
-          throw new Error('MetaMask is not installed');
+          throw new Error('MetaMask is not installed. Please install MetaMask extension from https://metamask.io');
+        }
+        
+        console.log('✓ MetaMask detected');
+
+        // Check if MetaMask is unlocked
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts.length === 0) {
+            console.log('🔐 MetaMask is locked, requesting unlock...');
+          }
+        } catch (e) {
+          console.warn('Could not check MetaMask lock status:', e);
         }
 
-        // Request account access (map circuit breaker errors)
+        // Request account access with timeout
         let accounts: string[] = [];
         try {
-          accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        } catch (e) {
+          console.log('🔑 Requesting account access...');
+          accounts = await Promise.race([
+            window.ethereum.request({ method: 'eth_requestAccounts' }),
+            new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error('Account request timed out. Please unlock MetaMask and try again.')), 15000)
+            )
+          ]);
+          console.log('✓ Account access granted:', accounts[0]);
+        } catch (e: any) {
           if (isCircuitBreakerError(e)) throw mapCircuitBreaker(e);
+          if (e.code === 4001) {
+            throw new Error('MetaMask connection rejected. Please approve the connection request.');
+          }
           throw e;
         }
+        
+        if (!isMounted) return;
         setAccount(accounts[0]);
 
-        // Create provider and signer
+        // Create provider and check connection
+        console.log('🌐 Creating provider...');
         const provider = new ethers.BrowserProvider(window.ethereum);
         
+        // Verify provider can connect
+        try {
+          const network = await provider.getNetwork();
+          console.log('✓ Provider connected to network:', {
+            name: network.name,
+            chainId: Number(network.chainId)
+          });
+        } catch (e) {
+          console.error('❌ Provider connection failed:', e);
+          throw new Error('Failed to connect to network. Please check your internet connection and try again.');
+        }
+        
         // Check current network and switch if needed
+        console.log('🔄 Checking/switching network...');
         await switchToNetwork(networkConfig, selectedBlockchain);
         
+        if (!isMounted) return;
+        
         // Recreate provider after potential network switch
+        console.log('🔄 Recreating provider after network switch...');
         const updatedProvider = new ethers.BrowserProvider(window.ethereum);
+        
+        // Get signer
+        console.log('✍️ Getting signer...');
         const signer = await updatedProvider.getSigner();
+        const signerAddress = await signer.getAddress();
+        console.log('✓ Signer address:', signerAddress);
 
         // Create contract instance with network-specific address
         const contractAddress = networkConfig.contractAddress || DEFAULT_CONTRACT_ADDRESS;
+        console.log('📝 Creating contract instance at:', contractAddress);
+        
+        // Verify contract address is valid
+        if (!ethers.isAddress(contractAddress)) {
+          throw new Error(`Invalid contract address: ${contractAddress}. Please deploy contracts with: npm run contracts:deploy`);
+        }
+        
         const nftContract = new ethers.Contract(contractAddress, contractABI, signer);
+        
+        // Verify contract exists by checking code
+        try {
+          const code = await updatedProvider.getCode(contractAddress);
+          if (code === '0x') {
+            throw new Error(`No contract found at ${contractAddress}. Please deploy contracts with: npm run contracts:deploy`);
+          }
+          console.log('✓ Contract code verified at address');
+        } catch (e: any) {
+          if (e.message.includes('No contract found')) throw e;
+          console.warn('Could not verify contract code:', e);
+        }
+        
+        // Small delay to ensure contract is fully initialized
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        if (!isMounted) return;
+        
         setContract(nftContract);
         setIsLoading(false);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'An unknown error occurred';
-        setError(msg);
+        clearTimeout(timeoutId);
+        console.log('✅ Contract initialized successfully!');
+      } catch (err: any) {
+        if (!isMounted) return;
+        
+        console.error('❌ Contract initialization error:', err);
+        
+        // Provide helpful error messages
+        let errorMessage = 'Contract failed to initialize. ';
+        
+        if (err.message?.includes('MetaMask')) {
+          errorMessage += err.message;
+        } else if (err.message?.includes('No contract found')) {
+          errorMessage += err.message;
+        } else if (err.message?.includes('Invalid contract address')) {
+          errorMessage += err.message;
+        } else if (err.message?.includes('network')) {
+          errorMessage += 'Network connection issue. Please check: 1) Hardhat nodes are running (npm run check-nodes), 2) MetaMask is on the correct network.';
+        } else if (err.message?.includes('timeout') || err.message?.includes('timed out')) {
+          errorMessage += 'Connection timed out. Please check: 1) MetaMask is unlocked, 2) Network is accessible, 3) Hardhat nodes are running.';
+        } else {
+          errorMessage += `${err.message || 'Unknown error'}. Please check your wallet connection and network settings.`;
+        }
+        
+        setError(errorMessage);
         setIsLoading(false);
+        if (timeoutId) clearTimeout(timeoutId);
       }
     };
 
     initContract();
+    
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
 
     // Listen for account and network changes
     if (window.ethereum) {
@@ -278,20 +444,16 @@ export function useNFTContract(selectedBlockchain: string = 'ethereum') {
   ) => {
     if (!contract) throw new Error('Contract not initialized');
     if (isSwitchingNetwork) throw new Error('Please wait, switching network...');
-    // Ensure provider is on the expected network before minting
+    // Ensure provider is on the expected network before minting with retry logic
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      let chainId: bigint;
-      try {
-        ({ chainId } = await provider.getNetwork());
-      } catch (e) {
-        if (isCircuitBreakerError(e)) throw mapCircuitBreaker(e);
-        throw e;
-      }
-      const expected = currentNetwork ? getEffectiveChainId(currentNetwork) : undefined;
-      if (expected !== undefined && Number(chainId) !== expected) {
-        throw new Error(`Wrong network. Expected chain ID ${expected}, got ${Number(chainId)}.`);
-      }
+      await retryRPCCall(async () => {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const { chainId } = await provider.getNetwork();
+        const expected = currentNetwork ? getEffectiveChainId(currentNetwork) : undefined;
+        if (expected !== undefined && Number(chainId) !== expected) {
+          throw new Error(`Wrong network. Expected chain ID ${expected}, got ${Number(chainId)}.`);
+        }
+      });
     } catch (e) {
       throw e instanceof Error ? e : new Error('Failed to verify network before minting');
     }
@@ -316,9 +478,14 @@ export function useNFTContract(selectedBlockchain: string = 'ethereum') {
 
       console.log('Final Token URI (Metadata CID):', finalTokenURI);
 
-      const tx = await contract.mintNFT(to, finalTokenURI, royaltyPercentage, creatorName, editions, category);
+      // Use retry logic for the transaction
+      const tx = await retryRPCCall(async () => 
+        await contract.mintNFT(to, finalTokenURI, royaltyPercentage, creatorName, editions, category)
+      );
       console.log("Transaction sent:", tx.hash);
-      const receipt = await tx.wait();
+      
+      // Use retry logic for waiting for receipt
+      const receipt = await retryRPCCall(async () => await tx.wait());
       console.log("Transaction confirmed in block:", receipt.blockNumber);
       
       // Attempt multiple approaches to find the NFTMinted event
