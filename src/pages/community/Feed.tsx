@@ -18,6 +18,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { CommunityNav } from "@/components/CommunityNav";
+import { NFTImage } from "@/components/NFTImage";
 
 // Post data type
 type Post = {
@@ -262,10 +263,11 @@ const CommunityFeed = () => {
                       
                       {post.image && (
                         <div className="rounded-lg overflow-hidden mb-3">
-                          <img 
+                          <NFTImage 
                             src={post.image}
                             alt="Post content"
-                            className="w-full"
+                            className="w-full h-auto object-cover"
+                            showLoader={true}
                           />
                         </div>
                       )}

@@ -9,13 +9,13 @@ interface NFTImageProps {
   showLoader?: boolean;
 }
 
-// IPFS gateway URLs in order of preference (public first for better CORS support)
+// IPFS gateway URLs in order of preference (local first for speed, then public)
 const IPFS_GATEWAYS = [
-  'https://ipfs.io/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/',
-  'http://127.0.0.1:8081/ipfs/',  // Local IPFS gateway as fallback
-  'https://dweb.link/ipfs/'
+  'http://127.0.0.1:8081/ipfs/',      // Local IPFS gateway (fastest)
+  'https://ipfs.io/ipfs/',            // Public gateway 1
+  'https://gateway.pinata.cloud/ipfs/', // Public gateway 2
+  'https://cloudflare-ipfs.com/ipfs/', // Public gateway 3
+  'https://dweb.link/ipfs/'           // Public gateway 4
 ];
 
 export const NFTImage = ({ 

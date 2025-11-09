@@ -48,13 +48,13 @@ const IPFS_GATEWAYS = [
 async function fetchMetadataFromIPFS(tokenURI: string): Promise<NFTMetadata | null> {
   if (!tokenURI) return null;
 
-  // Try local gateway first, then public gateways
+  // Try local gateway first (fastest), then public gateways
   const gateways = [
-    'http://127.0.0.1:8081/ipfs/',  // Local IPFS gateway
-    'https://ipfs.io/ipfs/',
-    'https://gateway.pinata.cloud/ipfs/',
-    'https://cloudflare-ipfs.com/ipfs/',
-    'https://dweb.link/ipfs/'
+    'http://127.0.0.1:8081/ipfs/',      // Local IPFS gateway (fastest)
+    'https://ipfs.io/ipfs/',            // Public gateway 1
+    'https://gateway.pinata.cloud/ipfs/', // Public gateway 2
+    'https://cloudflare-ipfs.com/ipfs/', // Public gateway 3
+    'https://dweb.link/ipfs/'           // Public gateway 4
   ];
   
   for (const gateway of gateways) {
@@ -353,12 +353,11 @@ function convertIPFSToHTTP(uri: string): string {
  * Convert BlockchainNFT to marketplace display format
  */
 export function convertToMarketplaceFormat(nft: BlockchainNFT): any {
-  // Convert IPFS image URI to HTTP URL with logging
+  // Keep IPFS URI as-is - NFTImage component handles gateway fallbacks
   console.log(`Processing NFT image for Token ID ${nft.tokenId}:`, nft.metadata?.image);
   const imageUrl = nft.metadata?.image 
-    ? convertIPFSToHTTP(nft.metadata.image)
-    : 'https://images.unsplash.com/photo-1614812513172-567d2fe96a75?q=80&w=1470&auto=format&fit=crop';
-  console.log(`Resulting image URL for Token ID ${nft.tokenId}:`, imageUrl);
+    || 'https://images.unsplash.com/photo-1614812513172-567d2fe96a75?q=80&w=1470&auto=format&fit=crop';
+  console.log(`Image URL for Token ID ${nft.tokenId}:`, imageUrl);
 
   // Generate a default price if not listed (based on token ID for variety)
   const generateDefaultPrice = (tokenId: string): string => {
