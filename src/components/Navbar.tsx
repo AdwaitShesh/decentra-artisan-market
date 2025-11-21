@@ -89,9 +89,8 @@ export const Navbar = () => {
   };
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-      scrolled ? "bg-gray-950/90 backdrop-blur-lg shadow-lg" : "bg-gray-950 border-b border-gray-800/50"
-    }`}>
+    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-gray-950/90 backdrop-blur-lg shadow-lg" : "bg-gray-950 border-b border-gray-800/50"
+      }`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -114,7 +113,7 @@ export const Navbar = () => {
             <Link to="/drops" className="text-gray-400 font-medium hover:text-purple-400 transition-colors duration-300">
               Drops
             </Link>
-            
+
             {/* Community Dropdown */}
             <div className="relative group">
               <button
@@ -125,12 +124,12 @@ export const Navbar = () => {
                 Community
                 <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${activeDropdown === 'community' ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {activeDropdown === 'community' && (
                 <div className="absolute left-0 mt-2 w-60 bg-gray-900 border border-gray-800 rounded-xl shadow-xl z-50">
                   <div className="p-2 space-y-1">
-                    <Link 
-                      to="/community/feed" 
+                    <Link
+                      to="/community/feed"
                       className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
                       onClick={() => setActiveDropdown(null)}
                     >
@@ -141,7 +140,7 @@ export const Navbar = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Release Your Art Dropdown */}
             <div className="relative group">
               <button
@@ -152,28 +151,28 @@ export const Navbar = () => {
                 Release Your Art
                 <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${activeDropdown === 'release' ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {activeDropdown === 'release' && (
                 <div className="absolute left-0 mt-2 w-60 bg-gray-900 border border-gray-800 rounded-xl shadow-xl z-50">
                   <div className="p-2 space-y-1">
-                    <Link 
-                      to="/release/start" 
+                    <Link
+                      to="/release/start"
                       className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
                       onClick={() => setActiveDropdown(null)}
                     >
                       <Image size={16} className="text-purple-400" />
                       <span>Get Started</span>
                     </Link>
-                    <Link 
-                      to="/release/guide" 
+                    <Link
+                      to="/release/guide"
                       className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
                       onClick={() => setActiveDropdown(null)}
                     >
                       <ExternalLink size={16} className="text-purple-400" />
                       <span>NFT Creation Guide</span>
                     </Link>
-                    <Link 
-                      to="/create/mint" 
+                    <Link
+                      to="/create/mint"
                       className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors bg-gray-800/50"
                       onClick={() => setActiveDropdown(null)}
                     >
@@ -184,7 +183,7 @@ export const Navbar = () => {
                 </div>
               )}
             </div>
-            
+
             <Link to="/stats" className="text-gray-400 font-medium hover:text-purple-400 transition-colors duration-300">
               Stats
             </Link>
@@ -195,9 +194,9 @@ export const Navbar = () => {
             {/* Search */}
             <div className="relative group mr-4">
               <div className="overflow-hidden transition-all duration-300 w-10 group-hover:w-64 focus-within:w-64">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-400 transition-colors duration-200 z-10 h-10 w-10"
                 >
                   <Search className="h-5 w-5" />
@@ -220,9 +219,9 @@ export const Navbar = () => {
               <ThemeToggle />
               <div className="relative group">
                 <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-gray-800/70 rounded-xl overflow-hidden">
-                  <img 
-                    src="https://randomuser.me/api/portraits/men/44.jpg" 
-                    alt="Profile" 
+                  <img
+                    src="https://randomuser.me/api/portraits/men/44.jpg"
+                    alt="Profile"
                     className="w-full h-full object-cover rounded-lg"
                   />
                 </Button>
@@ -235,6 +234,10 @@ export const Navbar = () => {
                     <Link to="/settings" className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors">
                       <ExternalLink size={16} className="text-purple-400" />
                       <span>Settings</span>
+                    </Link>
+                    <Link to="/my-nfts" className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors">
+                      <Image size={16} className="text-purple-400" />
+                      <span>My NFTs</span>
                     </Link>
                     <hr className="my-1 border-gray-800" />
                     <Button variant="ghost" className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 justify-start font-normal">
@@ -297,7 +300,7 @@ export const Navbar = () => {
             >
               <span className="font-medium">Drops</span>
             </Link>
-            
+
             {/* Mobile Community Dropdown */}
             <div className="py-1">
               <button
@@ -310,7 +313,7 @@ export const Navbar = () => {
                 </div>
                 <ChevronDown className={`h-5 w-5 transition-transform ${activeDropdown === 'mobile-community' ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {activeDropdown === 'mobile-community' && (
                 <div className="pl-10 mt-2 space-y-2 border-l border-gray-800 ml-2">
                   <Link
@@ -323,7 +326,7 @@ export const Navbar = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Mobile Release Your Art Dropdown */}
             <div className="py-1">
               <button
@@ -336,7 +339,7 @@ export const Navbar = () => {
                 </div>
                 <ChevronDown className={`h-5 w-5 transition-transform ${activeDropdown === 'mobile-release' ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {activeDropdown === 'mobile-release' && (
                 <div className="pl-10 mt-2 space-y-2 border-l border-gray-800 ml-2">
                   <Link
@@ -363,7 +366,7 @@ export const Navbar = () => {
                 </div>
               )}
             </div>
-            
+
             <Link
               to="/stats"
               className="text-gray-400 hover:text-purple-400 transition-colors py-3 flex items-center gap-3 px-2 rounded-lg hover:bg-gray-800/50"
@@ -378,9 +381,9 @@ export const Navbar = () => {
           <div className="space-y-4">
             <div className="relative group">
               <div className="flex items-center">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="absolute left-0 text-gray-400 hover:text-purple-400 transition-colors duration-200 z-10 h-12 w-12"
                 >
                   <Search className="h-6 w-6" />
@@ -391,7 +394,7 @@ export const Navbar = () => {
                 />
               </div>
             </div>
-            
+
             <div className="flex flex-col gap-3">
               <Link to="/create/mint" onClick={() => setIsMenuOpen(false)}>
                 <Button
@@ -400,7 +403,7 @@ export const Navbar = () => {
                   Mint NFT
                 </Button>
               </Link>
-              
+
               {isWalletConnected ? (
                 <Button disabled className="w-full bg-green-600 text-white border-0 rounded-xl shadow-md transition-all duration-300 h-12 text-base">
                   Wallet Connected
@@ -411,7 +414,7 @@ export const Navbar = () => {
                 </Button>
               )}
             </div>
-            
+
             <div className="flex justify-around mt-4">
               <Button variant="ghost" size="icon" className="h-12 w-12 text-gray-400 hover:text-white hover:bg-gray-800/70 rounded-xl">
                 <Bell className="h-6 w-6" />
@@ -421,9 +424,9 @@ export const Navbar = () => {
               </Button>
               <ThemeToggle className="h-12 w-12" />
               <Button variant="ghost" size="icon" className="h-12 w-12 text-gray-400 hover:text-white hover:bg-gray-800/70 rounded-xl overflow-hidden">
-                <img 
-                  src="https://randomuser.me/api/portraits/men/44.jpg" 
-                  alt="Profile" 
+                <img
+                  src="https://randomuser.me/api/portraits/men/44.jpg"
+                  alt="Profile"
                   className="w-full h-full object-cover rounded-lg"
                 />
               </Button>

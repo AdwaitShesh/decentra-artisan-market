@@ -9,15 +9,15 @@ import { MembershipsCategoryShowcase } from "@/components/MembershipsCategorySho
 import { PFPCategoryShowcase } from "@/components/PFPCategoryShowcase";
 import { PhotographyCategoryShowcase } from "@/components/PhotographyCategoryShowcase";
 import { MusicCategoryShowcase } from "@/components/MusicCategoryShowcase";
-import { 
-  Check, 
-  ChevronDown, 
-  ChevronUp, 
-  Heart, 
-  TrendingUp, 
-  EyeIcon, 
-  ChevronsLeft, 
-  ChevronsRight, 
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Heart,
+  TrendingUp,
+  EyeIcon,
+  ChevronsLeft,
+  ChevronsRight,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
@@ -28,6 +28,9 @@ import { Link } from 'react-router-dom';
 import { NFTImage } from '@/components/NFTImage';
 import { fetchAllNFTs, convertToMarketplaceFormat, getCachedNFTs, cacheNFTs, BlockchainNFT } from '@/lib/nftFetcher';
 import { NFTDebugger } from '@/components/NFTDebugger';
+import { buyItem } from '@/lib/marketplace';
+import { addNFTToMetaMask, ipfsToHttp } from '@/lib/metamaskNFT';
+import { toast } from 'sonner';
 
 // Type definitions
 type TrendingCollection = {
@@ -130,7 +133,7 @@ const notableCollections: NotableCollection[] = [
     id: "1",
     name: "Doodles",
     verified: true,
-    coverImage: "https://images.unsplash.com/photo-1614812513172-567d2fe96a75?q=80&w=1470&auto=format&fit=crop",
+    coverImage: "/assets/nft/collection-1.jpg",
     floorPrice: "3,693 ETH",
     volume: "100k ETH"
   },
@@ -138,7 +141,7 @@ const notableCollections: NotableCollection[] = [
     id: "2",
     name: "Bored Ape Yacht Club",
     verified: true,
-    coverImage: "https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?q=80&w=1497&auto=format&fit=crop",
+    coverImage: "/assets/nft/collection-2.jpg",
     floorPrice: "10,893 ETH",
     volume: "783K ETH"
   },
@@ -146,7 +149,7 @@ const notableCollections: NotableCollection[] = [
     id: "3",
     name: "Flemings by Tyler Hobbs",
     verified: true,
-    coverImage: "https://images.unsplash.com/photo-1629752187687-3d3c7ea3a21b?q=80&w=1587&auto=format&fit=crop",
+    coverImage: "/assets/nft/collection-3.jpg",
     floorPrice: "25,843 ETH",
     volume: "794 ETH"
   },
@@ -154,7 +157,7 @@ const notableCollections: NotableCollection[] = [
     id: "4",
     name: "MGMEX",
     verified: true,
-    coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1664&auto=format&fit=crop",
+    coverImage: "/assets/nft/3d-render.png",
     floorPrice: "0,016 ETH",
     volume: "900 ETH"
   },
@@ -162,7 +165,7 @@ const notableCollections: NotableCollection[] = [
     id: "5",
     name: "World of Women",
     verified: true,
-    coverImage: "https://images.unsplash.com/photo-1638803040283-7a5ffd48dad5?q=80&w=1664&auto=format&fit=crop",
+    coverImage: "/assets/nft/character-art.jpg",
     floorPrice: "0,423 ETH",
     volume: "899 ETH"
   }
@@ -172,7 +175,7 @@ const notableCollections: NotableCollection[] = [
 const featuredNFTs = [
   {
     id: "nft-1",
-    image: "https://images.unsplash.com/photo-1614812513172-567d2fe96a75?q=80&w=1470&auto=format&fit=crop",
+    image: "/assets/nft/abstract-art.png",
     title: "When Time Stands Still",
     creator: "ArtistName",
     creatorVerified: true,
@@ -183,7 +186,7 @@ const featuredNFTs = [
   },
   {
     id: "nft-2",
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1664&auto=format&fit=crop",
+    image: "/assets/nft/3d-render.png",
     title: "Letters by Olivia Rhye",
     creator: "OliviaRhye",
     creatorVerified: true,
@@ -194,7 +197,7 @@ const featuredNFTs = [
   },
   {
     id: "nft-3",
-    image: "https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2076&q=80",
+    image: "/assets/nft/landscape.png",
     title: "Mystical Pixel Life",
     creator: "CryptoArtist",
     creatorVerified: true,
@@ -205,7 +208,7 @@ const featuredNFTs = [
   },
   {
     id: "nft-4",
-    image: "https://images.unsplash.com/photo-1638803040283-7a5ffd48dad5?q=80&w=1664&auto=format&fit=crop",
+    image: "/assets/nft/character-art.jpg",
     title: "Digital Dreams",
     creator: "DigitalDreamer",
     creatorVerified: false,
@@ -216,7 +219,7 @@ const featuredNFTs = [
   },
   {
     id: "nft-5",
-    image: "https://images.unsplash.com/photo-1592488741757-4bb6830a854b?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzaWMlMjBwbGF5ZXJ8ZW58MHx8MHx8fDA%3D",
+    image: "/assets/nft/music-visual.jpg",
     title: "Harmony Beats",
     creator: "MusicMaestro",
     creatorVerified: true,
@@ -227,7 +230,7 @@ const featuredNFTs = [
   },
   {
     id: "nft-6",
-    image: "https://images.unsplash.com/photo-1608306448197-e83633f1261c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWVtYmVyc2hpcHxlbnwwfHwwfHx8MA%3D%3D",
+    image: "/assets/nft/membership-badge.jpg",
     title: "Elite Membership Pass",
     creator: "MemberDAO",
     creatorVerified: true,
@@ -238,7 +241,7 @@ const featuredNFTs = [
   },
   {
     id: "nft-7",
-    image: "https://images.unsplash.com/photo-1630514969818-94aefc42ec47?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGZwfGVufDB8fDB8fHww",
+    image: "/assets/nft/avatar-pfp.jpg",
     title: "Cosmic Avatar #429",
     creator: "PFPMaster",
     creatorVerified: true,
@@ -249,7 +252,7 @@ const featuredNFTs = [
   },
   {
     id: "nft-8",
-    image: "https://images.unsplash.com/photo-1523483882047-85b221f82b78?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZG9tYWlufGVufDB8fDB8fHww",
+    image: "/assets/nft/domain-visual.jpg",
     title: "crypto.world",
     creator: "DomainKing",
     creatorVerified: true,
@@ -277,7 +280,7 @@ const Marketplace = () => {
   const [blockchainNFTs, setBlockchainNFTs] = useState<BlockchainNFT[]>([]);
   const [isLoadingNFTs, setIsLoadingNFTs] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState<string | null>(null);
-  
+
   const mainRef = useRef<HTMLDivElement>(null);
 
   const handleCategoryChange = (category: string) => {
@@ -297,13 +300,13 @@ const Marketplace = () => {
   // Handle NFT purchase
   const handleBuyNFT = async (nft: any) => {
     if (isPurchasing) return; // Prevent multiple simultaneous purchases
-    
+
     try {
       setIsPurchasing(nft.id);
-      
+
       // Check if MetaMask is available
       if (!window.ethereum) {
-        alert('Please install MetaMask to purchase NFTs');
+        toast.error('Please install MetaMask to purchase NFTs');
         return;
       }
 
@@ -311,61 +314,67 @@ const Marketplace = () => {
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
-      
-      // Get user's address
       const userAddress = await signer.getAddress();
-      
-      // For blockchain NFTs, use marketplace contract
-      if (nft.tokenId && nft.chain) {
-        // Use the marketplace address from memory
-        const marketplaceAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
-        
-        // If NFT is listed in marketplace, buy through marketplace
-        if (nft.isListed) {
-          const marketplaceABI = [
-            'function buyItem(address nft, uint256 tokenId) external payable'
-          ];
-          
-          const marketplace = new ethers.Contract(marketplaceAddress, marketplaceABI, signer);
-          const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // NFT contract address
-          
-          const tx = await marketplace.buyItem(contractAddress, nft.tokenId, {
-            value: nft.priceWei
-          });
-          
-          console.log('Purchase transaction sent:', tx.hash);
-          await tx.wait();
-          console.log('Purchase completed!');
-        } else {
-          // For demo purposes, simulate a direct purchase
-          console.log(`Simulating purchase of ${nft.title} for ${nft.price}`);
-          
-          // Simulate transaction delay
-          await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Check if user is already the owner
+      if (nft.owner && nft.owner.toLowerCase() === userAddress.toLowerCase()) {
+        toast.error("You already own this NFT!");
+        return;
+      }
+
+      // For real blockchain NFTs
+      if (nft.contractAddress && nft.tokenId && nft.priceWei) {
+        toast.info('Processing purchase...');
+
+        await buyItem(nft.chain || 'localhost', nft.contractAddress, BigInt(nft.tokenId), nft.priceWei);
+
+        // Calculate royalty (mock calculation if not present)
+        const royaltyPercent = nft.royalty ? parseFloat(nft.royalty) : 0.05;
+        const royaltyAmount = (nft.priceWei * BigInt(Math.floor(royaltyPercent * 100))) / BigInt(10000);
+
+        toast.success('NFT purchased successfully!');
+
+        if (nft.creator && nft.creator.toLowerCase() !== userAddress.toLowerCase() && royaltyAmount > 0) {
+          toast.info(`Royalty Payment: ${ethers.formatEther(royaltyAmount)} ETH sent to creator`);
+        }
+
+        // Automatically add NFT to MetaMask wallet
+        try {
+          // Convert IPFS image URL to HTTP for MetaMask display
+          let imageUrl = nft.image;
+          if (imageUrl && imageUrl.startsWith('ipfs://')) {
+            imageUrl = ipfsToHttp(imageUrl);
+          }
+
+          const added = await addNFTToMetaMask(
+            nft.contractAddress,
+            nft.tokenId,
+            imageUrl || undefined
+          );
+
+          if (added) {
+            toast.success('NFT added to your MetaMask wallet!');
+          } else {
+            toast.info('You can manually add this NFT to MetaMask using the contract address and token ID');
+          }
+        } catch (error) {
+          console.error('Error adding NFT to MetaMask:', error);
+          toast.info('To view this NFT in MetaMask, go to NFTs tab and click "Import NFT"');
         }
       } else {
-        // For featured NFTs (demo), simulate purchase
-        console.log(`Simulating purchase of ${nft.title} for ${nft.price}`);
-        
-        // Simulate transaction delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Fallback for mock NFTs
+        toast.success(`Successfully simulated purchase of ${nft.title} for ${nft.price}!`);
       }
-      
-      // Show success message
-      alert(`Successfully purchased ${nft.title} for ${nft.price}!`);
-      
-      // Optional: Update NFT ownership in local state
-      // This would typically be handled by listening to blockchain events
-      
+
     } catch (error: any) {
       console.error('Purchase failed:', error);
-      
+
       if (error.code === 4001) {
-        alert('Transaction was cancelled by user');
+        toast.error('Transaction was cancelled by user');
       } else if (error.code === -32603) {
-        alert('Transaction failed. Please check your wallet balance and try again.');
+        toast.error('Transaction failed. Please check your wallet balance and try again.');
       } else {
-        alert(`Purchase failed: ${error.message || 'Unknown error'}`);
+        toast.error(`Purchase failed: ${error.message || 'Unknown error'}`);
       }
     } finally {
       setIsPurchasing(null);
@@ -375,11 +384,11 @@ const Marketplace = () => {
   // Fetch blockchain NFTs and combine with featured NFTs
   const fetchNFTsByCategory = async (category: string) => {
     console.log(`Fetching NFTs for category: ${category}`);
-    
+
     // Combine blockchain NFTs with featured NFTs
     const blockchainFormatted = blockchainNFTs.map(convertToMarketplaceFormat);
     const allNFTs = [...blockchainFormatted, ...featuredNFTs];
-    
+
     // Sort NFTs: newly minted first (by tokenId descending), then by mintTimestamp
     const sortedNFTs = allNFTs.sort((a, b) => {
       // First priority: newly minted NFTs (higher token ID = newer)
@@ -390,13 +399,13 @@ const Marketplace = () => {
           return tokenIdB - tokenIdA; // Higher token ID first
         }
       }
-      
+
       // Second priority: mint timestamp (newer first)
       const timestampA = a.mintTimestamp || 0;
       const timestampB = b.mintTimestamp || 0;
       return timestampB - timestampA;
     });
-    
+
     if (category === 'all') {
       setNfts(sortedNFTs);
     } else {
@@ -422,7 +431,7 @@ const Marketplace = () => {
         console.log('Fetching NFTs from blockchain...');
         const fetchedNFTs = await fetchAllNFTs();
         setBlockchainNFTs(fetchedNFTs);
-        
+
         // Cache the results
         if (fetchedNFTs.length > 0) {
           cacheNFTs(fetchedNFTs, 5); // Cache for 5 minutes
@@ -435,7 +444,7 @@ const Marketplace = () => {
       setIsLoadingNFTs(false);
     }
   };
-  
+
   // Initialize with blockchain NFTs
   useEffect(() => {
     loadBlockchainNFTs();
@@ -453,12 +462,12 @@ const Marketplace = () => {
       if (newlyMintedNFT) {
         try {
           const nftData = JSON.parse(newlyMintedNFT);
-          
+
           // Update current category to match the newly minted NFT if not in 'all'
           if (activeCategory !== 'all' && activeCategory !== nftData.category) {
             setActiveCategory('all');
           }
-          
+
           // Add the new NFT to the existing list (at the beginning)
           setNfts(prevNfts => {
             // Check if NFT with same ID already exists
@@ -473,10 +482,10 @@ const Marketplace = () => {
             };
             return [newNftWithTimestamp, ...prevNfts];
           });
-          
+
           // Show a notification or alert that an NFT was added
           console.log("New NFT added to marketplace:", nftData);
-          
+
           // Clear the localStorage and immediately refresh blockchain NFTs
           localStorage.removeItem('newlyMintedNFT');
           localStorage.removeItem('nftCache'); // Clear cache to force refresh
@@ -486,20 +495,20 @@ const Marketplace = () => {
         }
       }
     };
-    
+
     // Check immediately and then set up interval
     checkForNewNFTs();
-    
+
     // Check more frequently (every 2 seconds instead of 5)
     const interval = setInterval(checkForNewNFTs, 2000);
-    
+
     return () => clearInterval(interval);
   }, [activeCategory]);
 
   return (
     <div className="min-h-screen bg-background text-white">
       <Navbar />
-      
+
       <main ref={mainRef} className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           <CategoryTabs activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
@@ -513,7 +522,7 @@ const Marketplace = () => {
             {activeCategory === "photography" && <PhotographyCategoryShowcase />}
             {activeCategory === "music" && <MusicCategoryShowcase />}
           </div>
-          
+
           {/* All section content */}
           {activeCategory === "all" && (
             <>
@@ -567,7 +576,7 @@ const Marketplace = () => {
                           <CheckCircle className="h-3 w-3 ml-0.5 text-primary" />
                         )}
                       </div>
-                      
+
                       {/* Additional metadata */}
                       {(nft.royalty || nft.editions) && (
                         <div className="flex items-center gap-2 mt-1 mb-2">
@@ -583,7 +592,7 @@ const Marketplace = () => {
                           )}
                         </div>
                       )}
-                      
+
                       <div className="mt-2 space-y-2">
                         {/* Price Display */}
                         <div className="flex justify-between items-center">
@@ -596,7 +605,7 @@ const Marketplace = () => {
                             <span className="text-xs text-gray-500">#{nft.tokenId}</span>
                           )}
                         </div>
-                        
+
                         {/* Action Buttons */}
                         {nft.tokenId ? (
                           <div className="flex gap-1">
@@ -609,11 +618,10 @@ const Marketplace = () => {
                             <button
                               onClick={() => handleBuyNFT(nft)}
                               disabled={isPurchasing === nft.id}
-                              className={`flex-1 text-center text-xs px-2 py-1.5 rounded transition-colors font-medium ${
-                                isPurchasing === nft.id
-                                  ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
-                                  : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-                              }`}
+                              className={`flex-1 text-center text-xs px-2 py-1.5 rounded transition-colors font-medium ${isPurchasing === nft.id
+                                ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
+                                : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                                }`}
                             >
                               {isPurchasing === nft.id ? 'Purchasing...' : 'Buy Now'}
                             </button>
@@ -629,11 +637,10 @@ const Marketplace = () => {
                             <button
                               onClick={() => handleBuyNFT(nft)}
                               disabled={isPurchasing === nft.id}
-                              className={`flex-1 text-center text-xs px-2 py-1.5 rounded transition-colors font-medium ${
-                                isPurchasing === nft.id
-                                  ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
-                                  : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-                              }`}
+                              className={`flex-1 text-center text-xs px-2 py-1.5 rounded transition-colors font-medium ${isPurchasing === nft.id
+                                ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
+                                : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                                }`}
                             >
                               {isPurchasing === nft.id ? 'Purchasing...' : 'Buy Now'}
                             </button>
@@ -644,32 +651,32 @@ const Marketplace = () => {
                   </div>
                 ))}
               </div>
-              
+
               {/* Trending Section */}
               <div className="mt-8">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center space-x-4">
-                    <button 
+                    <button
                       className={`font-medium ${activeTab === 'trending' ? 'text-white' : 'text-gray-400'}`}
                       onClick={() => handleTabChange('trending')}
                     >
                       Trending
                     </button>
-                    <button 
+                    <button
                       className={`font-medium ${activeTab === 'top' ? 'text-white' : 'text-gray-400'}`}
                       onClick={() => handleTabChange('top')}
                     >
                       Top
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <div className="bg-gray-800 rounded flex items-center px-3 py-1.5">
                       <span className="text-gray-400 text-sm mr-2">24h</span>
                       <ChevronDown size={16} className="text-gray-400" />
                     </div>
-                    
-                    <button 
+
+                    <button
                       className="bg-gray-800 rounded p-1.5"
                       onClick={toggleSortOrder}
                     >
@@ -681,7 +688,7 @@ const Marketplace = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Trending Collections Table */}
                 <div className="bg-gray-800/50 rounded-lg border border-gray-700">
                   <table className="w-full">
@@ -701,7 +708,7 @@ const Marketplace = () => {
                           <td>
                             <div className="flex items-center py-2">
                               <div className="w-8 h-8 rounded-full overflow-hidden mr-3">
-                                <img 
+                                <img
                                   src={collection.avatar}
                                   alt={collection.name}
                                   className="w-full h-full object-cover"
@@ -729,7 +736,7 @@ const Marketplace = () => {
                       ))}
                     </tbody>
                   </table>
-                  
+
                   {/* Pagination */}
                   <div className="flex justify-between items-center p-4 border-t border-gray-700">
                     <div className="flex items-center">
@@ -754,7 +761,7 @@ const Marketplace = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Notable Collections */}
               <div className="mt-12">
                 <h2 className="text-xl font-bold mb-4">Notable collections</h2>
@@ -762,7 +769,7 @@ const Marketplace = () => {
                   {notableCollections.map((collection) => (
                     <div key={collection.id} className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition cursor-pointer">
                       <div className="aspect-square">
-                        <img 
+                        <img
                           src={collection.coverImage}
                           alt={collection.name}
                           className="w-full h-full object-cover"
@@ -790,7 +797,7 @@ const Marketplace = () => {
                   ))}
                 </div>
               </div>
-              
+
               {/* Trending in Art Section */}
               <div className="mt-12">
                 <div className="flex justify-between items-center mb-4">
@@ -804,7 +811,7 @@ const Marketplace = () => {
                   {Array.from({ length: 5 }).map((_, index) => (
                     <div key={`art-${index}`} className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition cursor-pointer">
                       <div className="aspect-square bg-gray-700">
-                        <img 
+                        <img
                           src={`https://source.unsplash.com/random/300x300?art=${index}`}
                           alt={`Art NFT ${index}`}
                           className="w-full h-full object-cover"
@@ -827,7 +834,7 @@ const Marketplace = () => {
               </div>
             </>
           )}
-          
+
           {/* NFT Grid - shown for other categories */}
           {activeCategory !== "all" && activeCategory !== "art" && activeCategory !== "gaming" && activeCategory !== "memberships" && activeCategory !== "pfps" && activeCategory !== "photography" && activeCategory !== "music" && (
             <div className="my-8">
@@ -839,7 +846,7 @@ const Marketplace = () => {
                 {Array.from({ length: 8 }).map((_, index) => (
                   <div key={`${activeCategory}-${index}`} className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition cursor-pointer">
                     <div className="aspect-square bg-gray-700">
-                      <img 
+                      <img
                         src={`https://source.unsplash.com/random/300x300?${activeCategory}=${index}`}
                         alt={`${activeCategory} NFT ${index}`}
                         className="w-full h-full object-cover"

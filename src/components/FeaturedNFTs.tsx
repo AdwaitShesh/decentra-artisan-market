@@ -10,7 +10,7 @@ const featuredNFTs = [
     title: "Ethereal Whispers",
     artist: "Priya Sharma",
     price: "0.85 ETH",
-    image: "https://images.unsplash.com/photo-1633218388467-539babe5f280?auto=format&fit=crop&w=720&q=80",
+    image: "/assets/nft/ethereal-whispers.png",
     category: "Digital Art"
   },
   {
@@ -18,7 +18,7 @@ const featuredNFTs = [
     title: "Heritage Echo",
     artist: "Rahul Mehta",
     price: "1.2 ETH",
-    image: "https://images.unsplash.com/photo-1618172193763-c511deb635ca?auto=format&fit=crop&w=720&q=80",
+    image: "/assets/nft/heritage-echo.png",
     category: "Traditional"
   },
   {
@@ -26,7 +26,7 @@ const featuredNFTs = [
     title: "Quantum Dreams",
     artist: "Anika Patel",
     price: "0.65 ETH",
-    image: "https://images.unsplash.com/photo-1618172193622-ae2d025f2c95?auto=format&fit=crop&w=720&q=80",
+    image: "/assets/nft/quantum-dreams.png",
     category: "Animation"
   },
   {
@@ -34,7 +34,7 @@ const featuredNFTs = [
     title: "Cosmic Resonance",
     artist: "Vikram Singh",
     price: "2.1 ETH",
-    image: "https://images.unsplash.com/photo-1634986666676-ec8fd927c23d?auto=format&fit=crop&w=720&q=80",
+    image: "/assets/nft/cosmic-resonance.png",
     category: "Photography"
   }
 ];
@@ -60,8 +60,8 @@ export function FeaturedNFTs() {
             <Card key={nft.id} className="group overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 dark:bg-gray-900 dark:shadow-gray-900/30">
               <CardContent className="p-0">
                 <div className="relative">
-                  <img 
-                    src={nft.image} 
+                  <img
+                    src={nft.image}
                     alt={nft.title}
                     className="w-full aspect-square object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />

@@ -11,6 +11,9 @@ import NFTDetail from "./pages/NFTDetail";
 import Artists from "./pages/Artists";
 import Patents from "./pages/Patents";
 import About from "./pages/About";
+import Drops from "./pages/Drops";
+import Stats from "./pages/Stats";
+import MyNFTs from "./pages/MyNFTs";
 import NotFound from "./pages/NotFound";
 // Import community pages
 import CommunityGroups from "./pages/community/Groups";
@@ -60,6 +63,9 @@ const App = () => {
               <Route path="/artists" element={<Artists />} />
               <Route path="/patents" element={<Patents />} />
               <Route path="/about" element={<About />} />
+              <Route path="/drops" element={<Drops />} />
+              <Route path="/stats" element={<Stats />} />
+              <Route path="/my-nfts" element={<MyNFTs />} />
 
               {/* Community Routes */}
               <Route path="/community/groups" element={<CommunityGroups />} />

@@ -2,8 +2,12 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { NFTMintForm } from "@/components/NFTMintForm";
 import { CreateNav } from "@/components/CreateNav";
+import { useLocation } from "react-router-dom";
 
 const CreateNFT = () => {
+  const location = useLocation();
+  const { file, preview } = (location.state as { file?: File; preview?: string }) || {};
+
   return (
     <div className="min-h-screen bg-background font-inter">
       <Navbar />
@@ -15,7 +19,7 @@ const CreateNFT = () => {
             Mint your digital artwork as an NFT on the Decentra Artisan Market
           </p>
           
-          <NFTMintForm />
+          <NFTMintForm initialFile={file} initialPreview={preview} />
           
           <div className="mt-8 p-6 bg-muted rounded-lg">
             <h2 className="text-xl font-semibold mb-4">How It Works</h2>

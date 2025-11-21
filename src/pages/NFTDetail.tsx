@@ -15,6 +15,7 @@ import { ethers } from 'ethers';
 import { Heart, Share2, User, Wallet, Eye, TrendingUp, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Post } from './community/Feed';
+import { addNFTToMetaMask, ipfsToHttp } from '@/lib/metamaskNFT';
 
 interface NFTDetailData {
   tokenId: string;
@@ -36,7 +37,7 @@ const NFTDetail = () => {
   const { chain, tokenId } = useParams<{ chain: string; tokenId: string }>();
   const navigate = useNavigate();
   const { account, approve, getApproved } = useNFTContract(chain || 'ethereum');
-  
+
   const [nft, setNft] = useState<NFTDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
@@ -47,12 +48,12 @@ const NFTDetail = () => {
   useEffect(() => {
     const fetchNFTDetail = async () => {
       if (!chain || !tokenId) return;
-      
+
       try {
         setLoading(true);
         const nfts = await fetchNFTsFromChain(chain);
         const foundNft = nfts.find(n => n.tokenId === tokenId);
-        
+
         if (!foundNft) return;
 
         let listing = null;
@@ -103,11 +104,42 @@ const NFTDetail = () => {
       await buyItem(nft.chain, nft.contractAddress, BigInt(nft.tokenId), nft.priceWei);
 
       const royaltyAmount = (nft.priceWei * BigInt(Math.floor(parseFloat(nft.royalty) * 100))) / BigInt(10000);
-      
+
       toast.success('NFT purchased successfully!');
 
       if (nft.creator.toLowerCase() !== account.toLowerCase() && royaltyAmount > 0) {
         toast.info(`Royalty Payment: ${ethers.formatEther(royaltyAmount)} ETH sent to creator`);
+      }
+
+      // Automatically add NFT to MetaMask wallet
+      try {
+        // Convert IPFS image URL to HTTP for MetaMask display
+        let imageUrl = nft.image;
+        if (imageUrl && imageUrl.startsWith('ipfs://')) {
+          imageUrl = ipfsToHttp(imageUrl);
+        }
+
+        console.log('Adding purchased NFT to MetaMask:', {
+          contractAddress: nft.contractAddress,
+          tokenId: nft.tokenId,
+          imageUrl
+        });
+
+        const added = await addNFTToMetaMask(
+          nft.contractAddress,
+          nft.tokenId,
+          imageUrl || undefined
+        );
+
+        if (added) {
+          toast.success('NFT added to your MetaMask wallet!');
+        } else {
+          toast.info('You can manually add this NFT to MetaMask using the contract address and token ID');
+        }
+      } catch (error) {
+        console.error('Error adding NFT to MetaMask:', error);
+        // Show a helpful message
+        toast.info('To view this NFT in MetaMask, go to NFTs tab and click "Import NFT"');
       }
 
       setNft(prev => prev ? { ...prev, owner: account, isListed: false, price: undefined } : null);
@@ -123,12 +155,12 @@ const NFTDetail = () => {
 
     try {
       setListing(true);
-      
+
       // 1. Approve the marketplace to manage the NFT
       toast.info('Approving marketplace...');
       const marketplaceAddress = getMarketplaceAddress(nft.chain);
       await approve(marketplaceAddress, BigInt(nft.tokenId));
-      
+
       // 2. Verify the approval
       toast.info('Verifying approval...');
       await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds for blockchain to sync
@@ -215,15 +247,15 @@ const NFTDetail = () => {
   return (
     <div className="min-h-screen bg-background text-white">
       <Navbar />
-      
-      <main className="pt-16 pb-16">
+
+      <main className="pt-28 pb-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Image */}
             <div className="space-y-4">
               <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
                 <NFTImage src={nft.image} alt={nft.name} className="w-full h-full object-cover" />
-                
+
                 <div className="absolute top-4 right-4 flex space-x-2">
                   <Button size="sm" variant="secondary" onClick={() => setLiked(!liked)}>
                     <Heart className={`h-4 w-4 ${liked ? 'fill-red-500 text-red-500' : ''}`} />
@@ -285,10 +317,10 @@ const NFTDetail = () => {
                         <p className="text-sm text-gray-400">Current Price</p>
                         <p className="text-2xl font-bold">{nft.price}</p>
                       </div>
-                      
+
                       <div className="flex space-x-3">
-                        <Button 
-                          className="flex-1" 
+                        <Button
+                          className="flex-1"
                           size="lg"
                           onClick={handleBuyNow}
                           disabled={buying || isOwner}
@@ -307,7 +339,7 @@ const NFTDetail = () => {
                         <p className="text-lg font-medium text-yellow-400">Not Listed for Sale</p>
                         <p className="text-xs text-gray-500 mt-1">This NFT is not currently available for purchase</p>
                       </div>
-                      
+
                       <div className="flex space-x-3">
                         {isOwner && (
                           <Dialog>
@@ -319,11 +351,11 @@ const NFTDetail = () => {
                                 <DialogTitle>List Your NFT for Sale</DialogTitle>
                               </DialogHeader>
                               <div className="space-y-4">
-                                <Input 
-                                  type="text" 
-                                  placeholder="Enter price in ETH" 
-                                  value={listPrice} 
-                                  onChange={(e) => setListPrice(e.target.value)} 
+                                <Input
+                                  type="text"
+                                  placeholder="Enter price in ETH"
+                                  value={listPrice}
+                                  onChange={(e) => setListPrice(e.target.value)}
                                 />
                                 <Button onClick={handleListForSale} disabled={listing}>
                                   {listing ? 'Listing...' : 'List NFT'}
@@ -336,7 +368,7 @@ const NFTDetail = () => {
                           Make Offer
                         </Button>
                       </div>
-                      
+
                       {/* Debug info for development */}
                       {process.env.NODE_ENV === 'development' && (
                         <div className="mt-4 p-3 bg-gray-900/50 rounded text-xs">
@@ -356,10 +388,44 @@ const NFTDetail = () => {
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4">Community Actions</h3>
-                  <Button variant="secondary" size="lg" onClick={handleShareToCommunity} className="w-full">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Share to Community Feed
-                  </Button>
+                  <div className="space-y-3">
+                    <Button variant="secondary" size="lg" onClick={handleShareToCommunity} className="w-full">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Share to Community Feed
+                    </Button>
+                    {isOwner && account?.toLowerCase() !== nft.creator.toLowerCase() && (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={async () => {
+                          try {
+                            let imageUrl = nft.image;
+                            if (imageUrl && imageUrl.startsWith('ipfs://')) {
+                              imageUrl = ipfsToHttp(imageUrl);
+                            }
+
+                            const added = await addNFTToMetaMask(
+                              nft.contractAddress,
+                              nft.tokenId,
+                              imageUrl || undefined
+                            );
+
+                            if (added) {
+                              toast.success('NFT added to MetaMask!');
+                            } else {
+                              toast.info('NFT addition cancelled');
+                            }
+                          } catch (error) {
+                            toast.error('Failed to add NFT to MetaMask');
+                          }
+                        }}
+                        className="w-full"
+                      >
+                        <Wallet className="h-4 w-4 mr-2" />
+                        Add to MetaMask Wallet
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -412,7 +478,7 @@ const NFTDetail = () => {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
