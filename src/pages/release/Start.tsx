@@ -1,13 +1,12 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { 
-  Rocket, 
-  CheckCircle2, 
-  PenTool, 
-  Wallet, 
-  Database, 
-  ArrowRight, 
+import {
+  CheckCircle2,
+  PenTool,
+  Wallet,
+  Database,
+  ArrowRight,
   Image as ImageIcon,
   FileText,
   MessageCircle,
@@ -21,11 +20,11 @@ const GetStarted = () => {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <Navbar />
-      
+
       <main className="pt-20 pb-16">
         <div className="container mx-auto px-4">
           <ReleaseNav />
-          
+
           {/* Hero section */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
@@ -35,7 +34,10 @@ const GetStarted = () => {
               Create, sell, and showcase your digital artwork on the Bharat Artisan Market
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl py-6 px-8 text-lg">
+              <Button
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl py-6 px-8 text-lg"
+                onClick={() => window.location.href = '/release/digital-art'}
+              >
                 Create Your First NFT
               </Button>
               <Button variant="outline" className="border-gray-700 text-gray-200 hover:text-white hover:bg-gray-800 rounded-xl py-6 px-8 text-lg">
@@ -43,7 +45,7 @@ const GetStarted = () => {
               </Button>
             </div>
           </div>
-          
+
           {/* Steps Section */}
           <div className="mb-20">
             <h2 className="text-3xl font-bold mb-10 text-center">How It Works</h2>
@@ -72,7 +74,7 @@ const GetStarted = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Step 2 */}
               <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 hover:border-purple-500/50 transition-all duration-300">
                 <div className="h-14 w-14 rounded-full bg-purple-900/30 border border-purple-500/30 flex items-center justify-center mb-5 mx-auto">
@@ -97,7 +99,7 @@ const GetStarted = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Step 3 */}
               <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 hover:border-purple-500/50 transition-all duration-300">
                 <div className="h-14 w-14 rounded-full bg-purple-900/30 border border-purple-500/30 flex items-center justify-center mb-5 mx-auto">
@@ -124,18 +126,18 @@ const GetStarted = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Featured Artists Section */}
           <div className="mb-20">
             <h2 className="text-3xl font-bold mb-2 text-center">Featured Artists</h2>
             <p className="text-gray-400 text-center mb-10">Join our thriving community of renowned digital creators</p>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
               {/* Artist 1 */}
               <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden hover:border-gray-700 transition group">
                 <div className="aspect-square bg-gradient-to-br from-purple-900/50 to-pink-900/50 overflow-hidden">
-                  <img 
-                    src="https://randomuser.me/api/portraits/women/44.jpg" 
+                  <img
+                    src="https://randomuser.me/api/portraits/women/44.jpg"
                     alt="Elena Bright"
                     className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
                   />
@@ -151,12 +153,12 @@ const GetStarted = () => {
                   </p>
                 </div>
               </div>
-              
+
               {/* Artist 2 */}
               <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden hover:border-gray-700 transition group">
                 <div className="aspect-square bg-gradient-to-br from-purple-900/50 to-pink-900/50 overflow-hidden">
-                  <img 
-                    src="https://randomuser.me/api/portraits/men/32.jpg" 
+                  <img
+                    src="https://randomuser.me/api/portraits/men/32.jpg"
                     alt="Marcus Chen"
                     className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
                   />
@@ -172,12 +174,12 @@ const GetStarted = () => {
                   </p>
                 </div>
               </div>
-              
+
               {/* Artist 3 */}
               <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden hover:border-gray-700 transition group">
                 <div className="aspect-square bg-gradient-to-br from-purple-900/50 to-pink-900/50 overflow-hidden">
-                  <img 
-                    src="https://randomuser.me/api/portraits/women/65.jpg" 
+                  <img
+                    src="https://randomuser.me/api/portraits/women/65.jpg"
                     alt="Sophia Lee"
                     className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
                   />
@@ -193,12 +195,12 @@ const GetStarted = () => {
                   </p>
                 </div>
               </div>
-              
+
               {/* Artist 4 */}
               <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden hover:border-gray-700 transition group">
                 <div className="aspect-square bg-gradient-to-br from-purple-900/50 to-pink-900/50 overflow-hidden">
-                  <img 
-                    src="https://randomuser.me/api/portraits/men/68.jpg" 
+                  <img
+                    src="https://randomuser.me/api/portraits/men/68.jpg"
                     alt="Jackson Wright"
                     className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
                   />
@@ -216,7 +218,7 @@ const GetStarted = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Benefits Section */}
           <div className="mb-20">
             <h2 className="text-3xl font-bold mb-10 text-center">Why Choose Bharat Artisan Market</h2>
@@ -235,7 +237,7 @@ const GetStarted = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Benefit 2 */}
                 <div className="flex gap-4">
                   <div className="h-12 w-12 rounded-lg bg-purple-900/30 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
@@ -248,7 +250,7 @@ const GetStarted = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Benefit 3 */}
                 <div className="flex gap-4">
                   <div className="h-12 w-12 rounded-lg bg-purple-900/30 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
@@ -262,7 +264,7 @@ const GetStarted = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Right Column */}
               <div className="space-y-6">
                 {/* Benefit 4 */}
@@ -277,7 +279,7 @@ const GetStarted = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Benefit 5 */}
                 <div className="flex gap-4">
                   <div className="h-12 w-12 rounded-lg bg-purple-900/30 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
@@ -290,7 +292,7 @@ const GetStarted = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Benefit 6 */}
                 <div className="flex gap-4">
                   <div className="h-12 w-12 rounded-lg bg-purple-900/30 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
@@ -306,12 +308,12 @@ const GetStarted = () => {
               </div>
             </div>
           </div>
-          
+
           {/* CTA Section */}
           <div className="rounded-2xl overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 to-pink-900/80 z-10"></div>
-            <img 
-              src="https://images.unsplash.com/photo-1618172193763-c511deb635ca?auto=format&fit=crop&w=1200&q=80" 
+            <img
+              src="https://images.unsplash.com/photo-1618172193763-c511deb635ca?auto=format&fit=crop&w=1200&q=80"
               alt="NFT Art"
               className="w-full h-64 object-cover"
             />
@@ -320,17 +322,20 @@ const GetStarted = () => {
               <p className="text-xl mb-6 max-w-2xl">
                 Join thousands of creators who are already selling their artwork on Bharat Artisan Market
               </p>
-              <Button className="bg-white hover:bg-gray-100 text-purple-900 rounded-xl py-6 px-8 text-lg">
+              <Button
+                className="bg-white hover:bg-gray-100 text-purple-900 rounded-xl py-6 px-8 text-lg"
+                onClick={() => window.location.href = '/release/digital-art'}
+              >
                 Create Your First NFT <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
 };
 
-export default GetStarted; 
+export default GetStarted;
