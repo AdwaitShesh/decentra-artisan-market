@@ -1,0 +1,19 @@
+{
+  "schemas": {
+    "BasicProfile": "ceramic://k3y52l7qbv1frxt706gqfebb0pwle8d2n2a1k5l4h42a2g00xkp5ayg0g73k6x4xs",
+    "FollowingList": "ceramic://k3y52l7qbv1frxt706gqfebb0pwle8d2n2a1k5l4h42a2g00xkp5ayg0g73k6x4xs",
+    "Post": "ceramic://k3y52l7qbv1frxt706gqfebb0pwle8d2n2a1k5l4h42a2g00xkp5ayg0g73k6x4xs",
+    "Comment": "ceramic://k3y52l7qbv1frxt706gqfebb0pwle8d2n2a1k5l4h42a2g00xkp5ayg0g73k6x4xs",
+    "Conversation": "ceramic://k3y52l7qbv1frxt706gqfebb0pwle8d2n2a1k5l4h42a2g00xkp5ayg0g73k6x4xs",
+    "Message": "ceramic://k3y52l7qbv1frxt706gqfebb0pwle8d2n2a1k5l4h42a2g00xkp5ayg0g73k6x4xs"
+  },
+  "definitions": {
+    "basicProfile": "BasicProfile",
+    "followingList": "FollowingList",
+    "post": "Post",
+    "comment": "Comment",
+    "conversation": "Conversation",
+    "message": "Message"
+  },
+  "tiles": {}
+}

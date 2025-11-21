@@ -14,6 +14,7 @@ import { useNFTContract } from '@/lib/nftContract';
 import { ethers } from 'ethers';
 import { Heart, Share2, User, Wallet, Eye, TrendingUp, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import { Post } from './community/Feed';
 
 interface NFTDetailData {
   tokenId: string;
@@ -150,10 +151,10 @@ const NFTDetail = () => {
     }
   };
 
-  const handleAddToCommunity = () => {
+  const handleShareToCommunity = () => {
     if (!nft) return;
 
-    const newPost = {
+    const newPost: Post = {
       id: `post-${Date.now()}`,
       author: {
         name: account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Anonymous',
@@ -169,7 +170,7 @@ const NFTDetail = () => {
         collection: nft.chain,
       },
       likes: 0,
-      comments: 0,
+      comments: [],
       shares: 0,
     };
 
@@ -181,6 +182,7 @@ const NFTDetail = () => {
       toast.error('Failed to share NFT to community');
     }
   };
+
 
   const isOwner = account && nft && account.toLowerCase() === nft.owner.toLowerCase();
   const isCreator = account && nft && account.toLowerCase() === nft.creator.toLowerCase();
@@ -354,7 +356,7 @@ const NFTDetail = () => {
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4">Community Actions</h3>
-                  <Button variant="secondary" size="lg" onClick={handleAddToCommunity} className="w-full">
+                  <Button variant="secondary" size="lg" onClick={handleShareToCommunity} className="w-full">
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Share to Community Feed
                   </Button>

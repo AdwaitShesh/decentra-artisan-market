@@ -130,30 +130,6 @@ export const Navbar = () => {
                 <div className="absolute left-0 mt-2 w-60 bg-gray-900 border border-gray-800 rounded-xl shadow-xl z-50">
                   <div className="p-2 space-y-1">
                     <Link 
-                      to="/community/groups" 
-                      className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
-                      onClick={() => setActiveDropdown(null)}
-                    >
-                      <Users size={16} className="text-purple-400" />
-                      <span>Chat Groups</span>
-                    </Link>
-                    <Link 
-                      to="/community/direct-messages" 
-                      className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
-                      onClick={() => setActiveDropdown(null)}
-                    >
-                      <MessageSquare size={16} className="text-purple-400" />
-                      <span>Direct Messages</span>
-                    </Link>
-                    <Link 
-                      to="/community/friends" 
-                      className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
-                      onClick={() => setActiveDropdown(null)}
-                    >
-                      <User size={16} className="text-purple-400" />
-                      <span>Friends</span>
-                    </Link>
-                    <Link 
                       to="/community/feed" 
                       className="flex items-center gap-2 w-full rounded-lg p-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
                       onClick={() => setActiveDropdown(null)}
@@ -337,27 +313,6 @@ export const Navbar = () => {
               
               {activeDropdown === 'mobile-community' && (
                 <div className="pl-10 mt-2 space-y-2 border-l border-gray-800 ml-2">
-                  <Link
-                    to="/community/groups"
-                    className="block text-gray-400 hover:text-purple-400 transition-colors py-2 px-3 rounded-lg hover:bg-gray-800/50"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Chat Groups
-                  </Link>
-                  <Link
-                    to="/community/direct-messages"
-                    className="block text-gray-400 hover:text-purple-400 transition-colors py-2 px-3 rounded-lg hover:bg-gray-800/50"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Direct Messages
-                  </Link>
-                  <Link
-                    to="/community/friends"
-                    className="block text-gray-400 hover:text-purple-400 transition-colors py-2 px-3 rounded-lg hover:bg-gray-800/50"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Friends
-                  </Link>
                   <Link
                     to="/community/feed"
                     className="block text-gray-400 hover:text-purple-400 transition-colors py-2 px-3 rounded-lg hover:bg-gray-800/50"

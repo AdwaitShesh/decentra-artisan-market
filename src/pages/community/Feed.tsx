@@ -21,7 +21,7 @@ import { CommunityNav } from "@/components/CommunityNav";
 import { NFTImage } from "@/components/NFTImage";
 
 // Post data type
-type Post = {
+export type Post = {
   id: string;
   author: {
     name: string;
@@ -37,7 +37,7 @@ type Post = {
     collection: string;
   };
   likes: number;
-  comments: number;
+  comments: { id: string; author: string; text: string; }[];
   shares: number;
   liked?: boolean;
   saved?: boolean;
@@ -46,7 +46,7 @@ type Post = {
 // Feed posts data
 const feedPosts: Post[] = [
   {
-    id: "1",
+    id: "post-1",
     author: {
       name: "Alice Johnson",
       avatar: "https://randomuser.me/api/portraits/women/12.jpg",
@@ -61,12 +61,15 @@ const feedPosts: Post[] = [
       collection: "Abstract Dimensions"
     },
     likes: 127,
-    comments: 24,
+    comments: [
+      { id: 'c1', author: 'Diana', text: 'This is amazing!' },
+      { id: 'c2', author: 'Bob', text: 'I love the colors!' },
+    ],
     shares: 15,
     liked: true
   },
   {
-    id: "2",
+    id: "post-2",
     author: {
       name: "Bob Smith",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg"
@@ -75,11 +78,11 @@ const feedPosts: Post[] = [
     content: "I'm impressed by the quality of NFTs on this platform! Just purchased this amazing piece from @DianaT's new collection.",
     image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
     likes: 89,
-    comments: 12,
+    comments: [],
     shares: 5
   },
   {
-    id: "3",
+    id: "post-3",
     author: {
       name: "Charlie Williams",
       avatar: "https://randomuser.me/api/portraits/men/44.jpg",
@@ -88,12 +91,12 @@ const feedPosts: Post[] = [
     timestamp: "Yesterday",
     content: "I've just launched a free tutorial series on creating generative art for NFTs. Looking forward to seeing what you all create!",
     likes: 215,
-    comments: 43,
+    comments: [],
     shares: 76,
     saved: true
   },
   {
-    id: "4",
+    id: "post-4",
     author: {
       name: "Diana Taylor",
       avatar: "https://randomuser.me/api/portraits/women/65.jpg",
@@ -108,8 +111,94 @@ const feedPosts: Post[] = [
       collection: "Genesis"
     },
     likes: 342,
-    comments: 87,
+    comments: [],
     shares: 112
+  },
+  {
+    id: "post-5",
+    author: {
+      name: "Eva Williams",
+      avatar: "https://randomuser.me/api/portraits/women/48.jpg",
+    },
+    timestamp: "1 day ago",
+    content: "Exploring the intersection of AI and art. What are your thoughts on AI-generated NFTs?",
+    likes: 150,
+    comments: [],
+    shares: 30
+  },
+  {
+    id: "post-6",
+    author: {
+      name: "Frank Brown",
+      avatar: "https://randomuser.me/api/portraits/men/11.jpg",
+    },
+    timestamp: "1 day ago",
+    content: "Just learned about the new NFT standard on this platform. Excited to see how it will change the game!",
+    likes: 50,
+    comments: [],
+    shares: 10
+  },
+  {
+    id: "post-7",
+    author: {
+      name: "Grace Davis",
+      avatar: "https://randomuser.me/api/portraits/women/22.jpg",
+      verified: true
+    },
+    timestamp: "2 days ago",
+    content: "My new NFT collection 'Galactic Dreams' is live on the marketplace! Check it out and let me know what you think.",
+    image: "https://images.unsplash.com/photo-1618172193763-c511deb635ca?auto=format&fit=crop&w=600&q=80",
+    nft: {
+      title: "Galactic Dreams #1",
+      price: "1.2 ETH",
+      collection: "Galactic Dreams"
+    },
+    likes: 200,
+    comments: [],
+    shares: 50
+  },
+  {
+    id: "post-8",
+    author: {
+      name: "Hannah Lee",
+      avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+    },
+    timestamp: "2 days ago",
+    content: "Just discovered an amazing NFT artist on this platform. Check out their work and show some love!",
+    likes: 100,
+    comments: [],
+    shares: 20
+  },
+  {
+    id: "post-9",
+    author: {
+      name: "Isaac Kim",
+      avatar: "https://randomuser.me/api/portraits/men/55.jpg",
+      verified: true
+    },
+    timestamp: "3 days ago",
+    content: "Excited to announce my new NFT collection 'Neon City' dropping next month! Stay tuned for more updates.",
+    image: "https://images.unsplash.com/photo-1638803040283-7a5ffd48dad5?auto=format&fit=crop&w=600&q=80",
+    nft: {
+      title: "Neon City #1",
+      price: "1.5 ETH",
+      collection: "Neon City"
+    },
+    likes: 250,
+    comments: [],
+    shares: 60
+  },
+  {
+    id: "post-10",
+    author: {
+      name: "Julia Martin",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    },
+    timestamp: "3 days ago",
+    content: "Just learned about the benefits of NFTs for artists. Excited to see how this technology will change the art world!",
+    likes: 120,
+    comments: [],
+    shares: 30
   }
 ];
 
@@ -149,13 +238,26 @@ const suggestedAccounts = [
 
 const CommunityFeed = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [accounts, setAccounts] = useState(suggestedAccounts.map(acc => ({ ...acc, isFollowing: false })));
+  const [newComment, setNewComment] = useState('');
 
   useEffect(() => {
     try {
+      // Get posts shared by the user from localStorage
       const storedPosts = JSON.parse(localStorage.getItem('communityPosts') || '[]');
-      setPosts([...storedPosts, ...feedPosts]);
+      
+      // Create a set of IDs from the stored posts to avoid duplicates from the hardcoded list
+      const storedPostIds = new Set(storedPosts.map(p => p.id));
+
+      // Filter out hardcoded posts that might already be in localStorage
+      const uniqueFeedPosts = feedPosts.filter(p => !storedPostIds.has(p.id));
+
+      // Combine the stored posts (which are prepended) and the unique hardcoded posts
+      setPosts([...storedPosts, ...uniqueFeedPosts]);
+
     } catch (error) {
       console.error('Failed to load community posts from localStorage', error);
+      // Fallback to just the hardcoded posts if localStorage is corrupt
       setPosts(feedPosts);
     }
   }, []);
@@ -174,6 +276,28 @@ const CommunityFeed = () => {
     }));
   };
   
+  const toggleFollow = (accountId: string) => {
+    setAccounts(accounts.map(acc => 
+      acc.id === accountId ? { ...acc, isFollowing: !acc.isFollowing } : acc
+    ));
+  };
+
+  const addComment = (postId: string) => {
+    if (!newComment.trim()) return;
+
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: [...post.comments, { id: `${Date.now()}`, author: 'You', text: newComment }],
+        };
+      }
+      return post;
+    }));
+
+    setNewComment('');
+  };
+
   const toggleSave = (postId: string) => {
     setPosts(posts.map(post => {
       if (post.id === postId) {
@@ -300,7 +424,7 @@ const CommunityFeed = () => {
                         </button>
                         <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-purple-400">
                           <MessageSquare className="h-4 w-4" />
-                          <span>{post.comments}</span>
+                          <span>{post.comments.length}</span>
                         </button>
                         <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-purple-400">
                           <Share2 className="h-4 w-4" />
@@ -314,6 +438,24 @@ const CommunityFeed = () => {
                       >
                         <Bookmark className={`h-4 w-4 ${post.saved ? 'fill-purple-500 text-purple-500' : ''}`} />
                       </button>
+                    </div>
+
+                    {/* Comments Section */}
+                    <div className="mt-4">
+                      {Array.isArray(post.comments) && post.comments.map(comment => (
+                        <div key={comment.id} className="flex items-start gap-2 mt-2">
+                          <p className="text-sm"><span className="font-semibold">{comment.author}</span>: {comment.text}</p>
+                        </div>
+                      ))}
+                      <div className="flex items-center gap-2 mt-2">
+                        <Input 
+                          placeholder="Add a comment..." 
+                          className="bg-gray-800 border-gray-700 text-white rounded-lg" 
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                        />
+                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => addComment(post.id)}>Post</Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -356,7 +498,7 @@ const CommunityFeed = () => {
                   <h2 className="font-semibold">Suggested Accounts</h2>
                 </div>
                 <div className="p-2">
-                  {suggestedAccounts.map((account) => (
+                  {accounts.map((account) => (
                     <div 
                       key={account.id}
                       className="flex items-center gap-3 p-2 hover:bg-gray-800/50 rounded-lg cursor-pointer transition"
@@ -377,8 +519,13 @@ const CommunityFeed = () => {
                         </div>
                         <p className="text-xs text-gray-400 truncate">{account.bio}</p>
                       </div>
-                      <Button variant="outline" size="sm" className="h-8 text-xs border-purple-500 text-purple-400 hover:bg-purple-500/10">
-                        Follow
+                      <Button 
+                        variant={account.isFollowing ? "secondary" : "outline"} 
+                        size="sm" 
+                        className={`h-8 text-xs ${account.isFollowing ? "bg-gray-700 text-white" : "border-purple-500 text-purple-400 hover:bg-purple-500/10"}`}
+                        onClick={() => toggleFollow(account.id)}
+                      >
+                        {account.isFollowing ? 'Following' : 'Follow'}
                       </Button>
                     </div>
                   ))}
