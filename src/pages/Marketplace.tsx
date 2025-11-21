@@ -500,95 +500,19 @@ const Marketplace = () => {
     <div className="min-h-screen bg-background text-white">
       <Navbar />
       
-      <main ref={mainRef} className="pt-16 pb-16">
+      <main ref={mainRef} className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Navigation tabs */}
-          <div className="flex overflow-x-auto hide-scrollbar py-2">
-            <button 
-              className={`px-4 py-2 mr-1 ${activeCategory === 'all' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white'} rounded-lg transition`}
-              onClick={() => handleCategoryChange('all')}
-            >
-              All
-            </button>
-            <button 
-              className={`px-4 py-2 mr-1 ${activeCategory === 'art' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white'} rounded-lg transition`}
-              onClick={() => handleCategoryChange('art')}
-            >
-              Art
-            </button>
-            <button 
-              className={`px-4 py-2 mr-1 ${activeCategory === 'gaming' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white'} rounded-lg transition`}
-              onClick={() => handleCategoryChange('gaming')}
-            >
-              Gaming
-            </button>
-            <button 
-              className={`px-4 py-2 mr-1 ${activeCategory === 'memberships' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white'} rounded-lg transition`}
-              onClick={() => handleCategoryChange('memberships')}
-            >
-              Memberships
-            </button>
-            <button 
-              className={`px-4 py-2 mr-1 ${activeCategory === 'pfps' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white'} rounded-lg transition`}
-              onClick={() => handleCategoryChange('pfps')}
-            >
-              PFPs
-            </button>
-            <button 
-              className={`px-4 py-2 mr-1 ${activeCategory === 'photography' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white'} rounded-lg transition`}
-              onClick={() => handleCategoryChange('photography')}
-            >
-              Photography
-            </button>
-            <button 
-              className={`px-4 py-2 ${activeCategory === 'music' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white'} rounded-lg transition`}
-              onClick={() => handleCategoryChange('music')}
-            >
-              Music
-            </button>
+          <CategoryTabs activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
+
+          {/* Category specific content */}
+          <div className="mt-8">
+            {activeCategory === "art" && <ArtCategoryShowcase />}
+            {activeCategory === "gaming" && <GamingCategoryShowcase />}
+            {activeCategory === "memberships" && <MembershipsCategoryShowcase />}
+            {activeCategory === "pfps" && <PFPCategoryShowcase />}
+            {activeCategory === "photography" && <PhotographyCategoryShowcase />}
+            {activeCategory === "music" && <MusicCategoryShowcase />}
           </div>
-          
-          {/* Art category content */}
-          {activeCategory === "art" && (
-            <div className="mt-8">
-              <ArtCategoryShowcase />
-            </div>
-          )}
-          
-          {/* Gaming category content */}
-          {activeCategory === "gaming" && (
-            <div className="mt-8">
-              <GamingCategoryShowcase />
-            </div>
-          )}
-          
-          {/* PFPs category content */}
-          {activeCategory === "pfps" && (
-            <div className="mt-8">
-              <PFPCategoryShowcase />
-            </div>
-          )}
-          
-          {/* Photography category content */}
-          {activeCategory === "photography" && (
-            <div className="mt-8">
-              <PhotographyCategoryShowcase />
-            </div>
-          )}
-          
-          {/* Music category content */}
-          {activeCategory === "music" && (
-            <div className="mt-8">
-              <MusicCategoryShowcase />
-            </div>
-          )}
-          
-          {/* Memberships category content */}
-          {activeCategory === "memberships" && (
-            <div className="mt-8">
-              <MembershipsCategoryShowcase />
-            </div>
-          )}
           
           {/* All section content */}
           {activeCategory === "all" && (
@@ -604,33 +528,6 @@ const Marketplace = () => {
                 </div>
               )}
 
-              {/* Debug info */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="mt-4 space-y-4">
-                  <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                    <h3 className="text-sm font-semibold mb-2">Debug Info</h3>
-                    <div className="text-xs space-y-1">
-                      <p>Blockchain NFTs: {blockchainNFTs.length}</p>
-                      <p>Total NFTs displayed: {nfts.length}</p>
-                      <p>Loading: {isLoadingNFTs ? 'Yes' : 'No'}</p>
-                      <p>Active Category: {activeCategory}</p>
-                      {blockchainNFTs.length > 0 && (
-                        <div className="mt-2">
-                          <p className="font-medium">Blockchain NFTs:</p>
-                          {blockchainNFTs.slice(0, 3).map(nft => (
-                            <p key={nft.tokenId} className="ml-2">
-                              {nft.chain} - Token #{nft.tokenId}: {nft.metadata?.name || 'No name'}
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* NFT Debugger Component */}
-                  <NFTDebugger />
-                </div>
-              )}
 
               {/* Featured NFT Cards */}
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

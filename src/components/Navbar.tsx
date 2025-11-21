@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ethers } from 'ethers';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +24,25 @@ export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isWalletConnected, setWalletConnected] = useState(false);
 
   useEffect(() => {
+    const checkWalletConnection = async () => {
+      if (window.ethereum) {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const accounts = await provider.listAccounts();
+          if (accounts.length > 0) {
+            setWalletConnected(true);
+          }
+        } catch (error) {
+          console.error("Error checking for wallet connection:", error);
+        }
+      }
+    };
+
+    checkWalletConnection();
+
     const handleScroll = () => {
       const offset = window.scrollY;
       if (offset > 50) {
@@ -49,6 +67,20 @@ export const Navbar = () => {
       setActiveDropdown(null);
     } else {
       setActiveDropdown(dropdown);
+    }
+  };
+
+  const connectWallet = async () => {
+    if (window.ethereum) {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        setWalletConnected(true);
+      } catch (error) {
+        console.error("Failed to connect wallet:", error);
+      }
+    } else {
+      alert("MetaMask is not installed. Please install it to use this feature.");
     }
   };
 
@@ -247,9 +279,15 @@ export const Navbar = () => {
                   Mint NFT
                 </Button>
               </Link>
-              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 rounded-xl shadow-md hover:shadow-purple-500/20 transition-all duration-300">
-                Connect Wallet
-              </Button>
+              {isWalletConnected ? (
+                <Button disabled className="bg-green-600 text-white border-0 rounded-xl shadow-md transition-all duration-300">
+                  Wallet Connected
+                </Button>
+              ) : (
+                <Button onClick={connectWallet} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 rounded-xl shadow-md hover:shadow-purple-500/20 transition-all duration-300">
+                  Connect Wallet
+                </Button>
+              )}
             </div>
           </div>
 
@@ -408,9 +446,15 @@ export const Navbar = () => {
                 </Button>
               </Link>
               
-              <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 rounded-xl shadow-md hover:shadow-purple-500/20 transition-all duration-300 h-12 text-base">
-                Connect Wallet
-              </Button>
+              {isWalletConnected ? (
+                <Button disabled className="w-full bg-green-600 text-white border-0 rounded-xl shadow-md transition-all duration-300 h-12 text-base">
+                  Wallet Connected
+                </Button>
+              ) : (
+                <Button onClick={connectWallet} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 rounded-xl shadow-md hover:shadow-purple-500/20 transition-all duration-300 h-12 text-base">
+                  Connect Wallet
+                </Button>
+              )}
             </div>
             
             <div className="flex justify-around mt-4">

@@ -15,21 +15,18 @@ const categories = [
 ];
 
 interface CategoryTabsProps {
+  activeCategory: string;
   onCategoryChange: (category: string) => void;
-  defaultCategory?: string;
 }
 
-export function CategoryTabs({ onCategoryChange, defaultCategory = 'all' }: CategoryTabsProps) {
-  const [activeCategory, setActiveCategory] = useState(defaultCategory);
-
+export function CategoryTabs({ activeCategory, onCategoryChange }: CategoryTabsProps) {
   const handleCategoryChange = (value: string) => {
-    setActiveCategory(value);
     onCategoryChange(value);
   };
 
   return (
     <Tabs 
-      defaultValue={activeCategory} 
+      value={activeCategory} 
       className="w-full" 
       onValueChange={handleCategoryChange}
     >

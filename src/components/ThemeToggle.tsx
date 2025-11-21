@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -33,7 +33,7 @@ export function ThemeToggle() {
         <Button 
           variant="outline" 
           size="icon" 
-          className="w-9 h-9 bg-background border-border text-foreground hover:bg-muted transition-colors"
+          className={`w-9 h-9 bg-background border-border text-foreground hover:bg-muted transition-colors ${className}`}
           aria-label="Toggle theme"
         >
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
