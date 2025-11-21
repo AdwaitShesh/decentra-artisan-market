@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import { pinByCID, toGatewayUrl, ipfsHealthCheck, uploadFileToIPFS } from '@/lib/ipfs';
+import { fetchAllNFTs } from '@/lib/nftFetcher';
 import { Link } from 'react-router-dom';
 import { NetworkStatus } from '@/components/NetworkStatus';
 import { RPCErrorBanner } from '@/components/RPCErrorBanner';
@@ -117,6 +118,8 @@ interface NFTMintFormProps {
 export function NFTMintForm({ initialFile, initialPreview }: NFTMintFormProps = {}) {
   // Blockchain selection (needs to be declared first for useNFTContract)
   const [blockchain, setBlockchain] = useState<string>('polygon'); // Default to recommended low-gas option
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
 
   // Function to get blockchain key from chain ID
   const getBlockchainFromChainId = (chainId: number): string => {
@@ -356,6 +359,36 @@ export function NFTMintForm({ initialFile, initialPreview }: NFTMintFormProps = 
     setCategoryChecklistStatus(resetChecklistStatus);
   };
 
+  // Check for duplicate media
+  const checkDuplicate = async (cid: string) => {
+    setCheckingDuplicate(true);
+    setIsDuplicate(false);
+    try {
+      // Fetch all NFTs from all chains
+      const allNFTs = await fetchAllNFTs();
+
+      // Also check localStorage 'myMintedNFTs'
+      const storedNFTs = localStorage.getItem('myMintedNFTs');
+      const localNFTs = storedNFTs ? JSON.parse(storedNFTs) : [];
+
+      const isDup = allNFTs.some(nft => nft.tokenURI && nft.tokenURI.includes(cid)) ||
+        localNFTs.some((nft: any) => nft.tokenURI && nft.tokenURI.includes(cid));
+
+      if (isDup) {
+        setIsDuplicate(true);
+        toast({
+          title: "Duplicate Media Detected",
+          description: "This media has already been minted as an NFT. Please use original content.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error checking for duplicates:", error);
+    } finally {
+      setCheckingDuplicate(false);
+    }
+  };
+
   // Handle file selection
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -391,6 +424,9 @@ export function NFTMintForm({ initialFile, initialPreview }: NFTMintFormProps = 
       setUploadProgress(100);
       setIsUploading(false);
       toast({ title: 'Uploaded to IPFS', description: cid });
+
+      // Check for duplicates
+      checkDuplicate(cid);
     } catch (err: any) {
       console.warn('IPFS upload failed, falling back to simulation:', err?.message);
       // Fallback to simulated upload
@@ -407,6 +443,7 @@ export function NFTMintForm({ initialFile, initialPreview }: NFTMintFormProps = 
   useEffect(() => {
     if (useDirectCID && manualCID) {
       setTokenURI(`ipfs://${manualCID}`);
+      checkDuplicate(manualCID);
     }
   }, [useDirectCID, manualCID]);
 
@@ -462,6 +499,9 @@ export function NFTMintForm({ initialFile, initialPreview }: NFTMintFormProps = 
             description: `Your drawing has been uploaded with CID: ${cid.substring(0, 10)}...`,
           });
 
+          // Check for duplicates
+          checkDuplicate(cid);
+
         } catch (error: any) {
           console.error('Error uploading drawing to IPFS:', error);
 
@@ -484,6 +524,23 @@ export function NFTMintForm({ initialFile, initialPreview }: NFTMintFormProps = 
 
   // Move to preview step
   const goToPreview = () => {
+    if (checkingDuplicate) {
+      toast({
+        title: "Checking for duplicates",
+        description: "Please wait while we verify media originality.",
+      });
+      return;
+    }
+
+    if (isDuplicate) {
+      toast({
+        title: "Duplicate Media",
+        description: "Cannot proceed with duplicate media. Please upload original content.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!nftName || !nftDescription || !nftCategory) {
       setMintStatus({ type: 'error', message: 'Please fill in all required fields' });
       return;
@@ -1331,6 +1388,22 @@ export function NFTMintForm({ initialFile, initialPreview }: NFTMintFormProps = 
                   )}
                 </div>
 
+                {checkingDuplicate && (
+                  <div className="mt-2 flex items-center text-sm text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                    Checking for duplicates...
+                  </div>
+                )}
+                {isDuplicate && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Duplicate Media Detected</AlertTitle>
+                    <AlertDescription>
+                      This media has already been minted as an NFT. To maintain originality, please upload unique content.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="blockchain">Blockchain *</Label>
@@ -1726,106 +1799,108 @@ export function NFTMintForm({ initialFile, initialPreview }: NFTMintFormProps = 
             </Button>
           )}
         </CardFooter>
-      </Card>
+      </Card >
 
       {/* Success Popup */}
-      {showSuccessPopup && mintedNFTData && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 shadow-xl">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">NFT Minted Successfully!</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowSuccessPopup(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-lg overflow-hidden bg-muted">
-                {mintedNFTData.image && (
-                  <img
-                    src={mintedNFTData.image}
-                    alt={mintedNFTData.title}
-                    className="w-full h-48 object-cover"
-                  />
-                )}
-              </div>
-
-              <div>
-                <h3 className="text-lg font-medium">{mintedNFTData.title}</h3>
-                <p className="text-sm text-muted-foreground truncate">{mintedNFTData.description}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Creator</p>
-                  <p>{mintedNFTData.creator}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Token ID</p>
-                  <p>{mintedNFTData.tokenId}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Editions</p>
-                  <p>{mintedNFTData.editions?.current} of {mintedNFTData.editions?.total}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Category</p>
-                  <p className="capitalize">{mintedNFTData.category}</p>
-                </div>
-              </div>
-
-              {/* Add verification status display */}
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-                <h4 className="text-sm font-medium mb-2">Verification Status</h4>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="flex flex-col items-center p-2 border border-gray-200 dark:border-gray-800 rounded">
-                    <span className={mintedNFTData.verified?.compliance ? "text-green-500" : "text-yellow-500"}>
-                      {mintedNFTData.verified?.compliance ?
-                        <CheckCircle className="h-5 w-5 mb-1" /> :
-                        <AlertCircle className="h-5 w-5 mb-1" />
-                      }
-                    </span>
-                    <span>Compliance</span>
-                  </div>
-                  <div className="flex flex-col items-center p-2 border border-gray-200 dark:border-gray-800 rounded">
-                    <span className={mintedNFTData.verified?.ipRights ? "text-green-500" : "text-yellow-500"}>
-                      {mintedNFTData.verified?.ipRights ?
-                        <CheckCircle className="h-5 w-5 mb-1" /> :
-                        <AlertCircle className="h-5 w-5 mb-1" />
-                      }
-                    </span>
-                    <span>IP Rights</span>
-                  </div>
-                  <div className="flex flex-col items-center p-2 border border-gray-200 dark:border-gray-800 rounded">
-                    <span className={mintedNFTData.verified?.category ? "text-green-500" : "text-yellow-500"}>
-                      {mintedNFTData.verified?.category ?
-                        <CheckCircle className="h-5 w-5 mb-1" /> :
-                        <AlertCircle className="h-5 w-5 mb-1" />
-                      }
-                    </span>
-                    <span>Category</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2 space-y-2">
-                <Link to="/marketplace">
-                  <Button className="w-full" onClick={() => setShowSuccessPopup(false)}>
-                    View in Marketplace
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => navigator.clipboard.writeText(mintedNFTData.transactionHash)}
-                >
-                  Copy Transaction Hash
+      {
+        showSuccessPopup && mintedNFTData && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 shadow-xl">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">NFT Minted Successfully!</h2>
+                <Button variant="ghost" size="icon" onClick={() => setShowSuccessPopup(false)}>
+                  <X className="h-4 w-4" />
                 </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="rounded-lg overflow-hidden bg-muted">
+                  {mintedNFTData.image && (
+                    <img
+                      src={mintedNFTData.image}
+                      alt={mintedNFTData.title}
+                      className="w-full h-48 object-cover"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium">{mintedNFTData.title}</h3>
+                  <p className="text-sm text-muted-foreground truncate">{mintedNFTData.description}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Creator</p>
+                    <p>{mintedNFTData.creator}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Token ID</p>
+                    <p>{mintedNFTData.tokenId}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Editions</p>
+                    <p>{mintedNFTData.editions?.current} of {mintedNFTData.editions?.total}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Category</p>
+                    <p className="capitalize">{mintedNFTData.category}</p>
+                  </div>
+                </div>
+
+                {/* Add verification status display */}
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+                  <h4 className="text-sm font-medium mb-2">Verification Status</h4>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="flex flex-col items-center p-2 border border-gray-200 dark:border-gray-800 rounded">
+                      <span className={mintedNFTData.verified?.compliance ? "text-green-500" : "text-yellow-500"}>
+                        {mintedNFTData.verified?.compliance ?
+                          <CheckCircle className="h-5 w-5 mb-1" /> :
+                          <AlertCircle className="h-5 w-5 mb-1" />
+                        }
+                      </span>
+                      <span>Compliance</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 border border-gray-200 dark:border-gray-800 rounded">
+                      <span className={mintedNFTData.verified?.ipRights ? "text-green-500" : "text-yellow-500"}>
+                        {mintedNFTData.verified?.ipRights ?
+                          <CheckCircle className="h-5 w-5 mb-1" /> :
+                          <AlertCircle className="h-5 w-5 mb-1" />
+                        }
+                      </span>
+                      <span>IP Rights</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 border border-gray-200 dark:border-gray-800 rounded">
+                      <span className={mintedNFTData.verified?.category ? "text-green-500" : "text-yellow-500"}>
+                        {mintedNFTData.verified?.category ?
+                          <CheckCircle className="h-5 w-5 mb-1" /> :
+                          <AlertCircle className="h-5 w-5 mb-1" />
+                        }
+                      </span>
+                      <span>Category</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 space-y-2">
+                  <Link to="/marketplace">
+                    <Button className="w-full" onClick={() => setShowSuccessPopup(false)}>
+                      View in Marketplace
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigator.clipboard.writeText(mintedNFTData.transactionHash)}
+                  >
+                    Copy Transaction Hash
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
     </>
   );
 } 
